@@ -1,0 +1,23 @@
+.defaultButton {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--background-color);
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 4px 8px var(--shadow-color);
+  padding: 12px 16px;
+}
+
+.defaultButton:hover {
+  background-color: var(--primary-color-hover);
+  box-shadow: 0 6px 12px var(--shadow-color-hover);
+  transform: translateY(-2px);
+}
+
+.defaultButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
