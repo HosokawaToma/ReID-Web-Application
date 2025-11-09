@@ -1,0 +1,4 @@
+@import "./global.css";
+@import "./styles/defaultInput.module.css";
+@import "./styles/defaultButton.module.css";
+@import "./styles/defaultForm.module.css";

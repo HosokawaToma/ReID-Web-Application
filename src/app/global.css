@@ -1,0 +1,11 @@
+:root {
+  --background-color: #ffffff;
+  --primary-color: #007bff;
+  --primary-color-hover: #0056b3;
+  --error-color: #ff4c4c;
+  --text-color: #333;
+  --secondary-color: #1a1a1a;
+  --white-gray-color: #ddd;
+  --shadow-color: rgba(0, 123, 255, 0.2);
+  --shadow-color-hover: rgba(0, 123, 255, 0.3);
+}

@@ -1,0 +1,32 @@
+.defaultInput {
+  font-size: 16px;
+  padding: 12px;
+  border: 1px solid var(--white-gray-color);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  width: 300px;
+}
+
+.defaultInput:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 8px var(--shadow-color-hover);
+}
+
+.defaultInput::placeholder {
+  color: #aaa;
+}
+
+.RequiredErrorMessageSpan {
+  color: var(--error-color);
+  font-size: 12px;
+  margin-top: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.defaultInput:user-invalid + .RequiredErrorMessageSpan {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
