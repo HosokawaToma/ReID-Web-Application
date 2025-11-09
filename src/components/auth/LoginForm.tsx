@@ -15,8 +15,7 @@ export default function LoginForm({ api }: { api: ApiV1 }) {
     const form = e.target as HTMLFormElement & { id: HTMLInputElement; password: HTMLInputElement };
     const id = form.id.value;
     const password = form.password.value;
-    api.authLoginAdminClient
-      .login(id, password)
+    api.login(id, password)
       .then(() => {
         setError(false);
         setErrorMessage("");

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { ApiV1 } from "@/lib/api/v1";
 import { useCallback, useState } from "react";

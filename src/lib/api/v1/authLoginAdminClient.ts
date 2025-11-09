@@ -1,8 +1,5 @@
 export class ApiV1AuthLoginAdminClient {
-  constructor(private readonly setToken: (token: string) => void) {
-  }
-
-  async login(id: string, password: string): Promise<void> {
+  async request(id: string, password: string): Promise<string> {
     return await fetch(new Request(
       new URL("/api/v1/auth/login/admin_client", process.env.NEXT_PUBLIC_API_URL as string),
       {
@@ -24,7 +21,7 @@ export class ApiV1AuthLoginAdminClient {
       if (typeof token !== "string") {
         throw new Error("Internal Server Error");
       }
-      this.setToken(token);
+      return token;
     }).catch(() => {
       throw new Error("Internal Server Error");
     });

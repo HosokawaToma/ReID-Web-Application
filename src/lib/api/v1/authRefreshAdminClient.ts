@@ -1,8 +1,5 @@
 export class ApiV1AuthRefreshAdminClient {
-  constructor(private readonly setToken: (token: string) => void) {
-  }
-
-  async refresh(): Promise<void> {
+  async request(): Promise<string> {
     return await fetch(new Request(
       new URL("/api/v1/auth/login/admin_client/refresh", process.env.NEXT_PUBLIC_API_URL as string),
       {
@@ -20,7 +17,7 @@ export class ApiV1AuthRefreshAdminClient {
       if (typeof token !== "string") {
         throw new Error("Internal Server Error");
       }
-      this.setToken(token);
+      return token;
     }).catch(() => {
       throw new Error("Internal Server Error");
     });
