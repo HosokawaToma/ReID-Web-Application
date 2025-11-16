@@ -1,13 +1,16 @@
 services:
   app:
-    build: .
-    ports:
-      - "3000:3000"
+    build:
+      context: .
+      args:
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
+    container_name: reid-server-web-app
     networks:
-      - web-app-network
+      - reid-server_web_app_network
     env_file:
       - .env
 
 networks:
-  web-app-network:
+  reid-server_web_app_network:
     external: true
