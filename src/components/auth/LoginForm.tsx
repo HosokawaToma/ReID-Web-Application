@@ -1,11 +1,15 @@
 "use client";
 
 import styles from "@/components/auth/LoginForm.module.css";
-import { ApiV1 } from "@/lib/api/v1";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function LoginForm({ api }: { api: ApiV1 }) {
+interface LoginFormProps {
+  login: (id: string, password: string) => Promise<string | null>;
+  setToken: (token: string | null) => void;
+}
+
+export default function LoginForm({ login, setToken }: LoginFormProps) {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const router = useRouter();
@@ -15,8 +19,9 @@ export default function LoginForm({ api }: { api: ApiV1 }) {
     const form = e.target as HTMLFormElement & { id: HTMLInputElement; password: HTMLInputElement };
     const id = form.id.value;
     const password = form.password.value;
-    api.login(id, password)
-      .then(() => {
+    login(id, password)
+      .then((token) => {
+        setToken(token);
         setError(false);
         setErrorMessage("");
         router.push("/dashboard");
