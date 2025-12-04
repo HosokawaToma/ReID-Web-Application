@@ -1,14 +1,21 @@
 "use client";
 
-import type { PersonSnapshotSearchRequest, PersonSnapshotSearchResponse } from "@/lib/api/v1/personSnapshotSearch";
+import type {
+  PersonSnapshotSearchRequest,
+  PersonSnapshotSearchResponse,
+} from "@/lib/api/v1/personSnapshotSearch";
 import { useEffect, useState } from "react";
 import PersonSnapshotItem from "./item";
 
 interface PersonSnapshotListProps {
   token: string | null;
   request: PersonSnapshotSearchRequest | null;
-  personSnapshotSearch: (token: string | null, request: PersonSnapshotSearchRequest | null) => Promise<PersonSnapshotSearchResponse>;
+  personSnapshotSearch: (
+    token: string | null,
+    request: PersonSnapshotSearchRequest | null
+  ) => Promise<PersonSnapshotSearchResponse>;
   personSnapshotImageSearch: (token: string | null, imageId: string) => Promise<Blob>;
+  onPersonIdClick: (personId: string) => void;
 }
 
 export default function PersonSnapshotList({
@@ -16,6 +23,7 @@ export default function PersonSnapshotList({
   request,
   personSnapshotSearch,
   personSnapshotImageSearch,
+  onPersonIdClick,
 }: PersonSnapshotListProps) {
   const [items, setItems] = useState<PersonSnapshotSearchResponse>({ person_snapshots: [] });
   useEffect(() => {
@@ -40,6 +48,7 @@ export default function PersonSnapshotList({
           camera_id={item.camera_id}
           view_id={item.view_id}
           timestamp={item.timestamp}
+          onPersonIdClick={onPersonIdClick}
         />
       ))}
     </div>

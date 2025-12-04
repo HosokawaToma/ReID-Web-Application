@@ -23,6 +23,24 @@ export default function Dashboard() {
     }
   }, [token, router]);
 
+  const handlePersonIdClick = (personId: string) => {
+    setRequest({
+      filters: {
+        ids: null,
+        image_ids: null,
+        camera_ids: null,
+        view_ids: null,
+        person_ids: [personId],
+        after_timestamp: null,
+        before_timestamp: null,
+      },
+      ordering: {
+        timestamp_asc: null,
+        timestamp_desc: true,
+      },
+    });
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-50 p-8 md:p-24">
       <h1 className="mb-8 text-3xl font-bold text-slate-800 md:text-4xl">ダッシュボード</h1>
@@ -34,6 +52,7 @@ export default function Dashboard() {
         request={request}
         personSnapshotSearch={ApiV1PersonSnapshotSearch}
         personSnapshotImageSearch={ApiV1PersonSnapshotImageSearch}
+        onPersonIdClick={handlePersonIdClick}
       />
     </main>
   );

@@ -12,6 +12,7 @@ interface PersonSnapshotItemProps {
   camera_id: number;
   view_id: number;
   timestamp: string;
+  onPersonIdClick: (personId: string) => void;
 }
 
 export default function PersonSnapshotItem({
@@ -22,6 +23,7 @@ export default function PersonSnapshotItem({
   camera_id,
   view_id,
   timestamp,
+  onPersonIdClick,
 }: PersonSnapshotItemProps) {
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
   useEffect(() => {
@@ -44,7 +46,13 @@ export default function PersonSnapshotItem({
       </div>
       <div className={styles.infoContainer}>
         <p className={styles.personId}>
-          Person ID: <span className={styles.personIdValue}>{person_id}</span>
+          Person ID:
+          <button
+            type="button"
+            onClick={() => onPersonIdClick(person_id)}
+            className={styles.personIdValue}>
+            {person_id}
+          </button>
         </p>
         <p className={styles.metaData}>
           Camera ID: <span className={styles.metaValue}>{camera_id}</span>
