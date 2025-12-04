@@ -1,0 +1,83 @@
+@import "../../app/styles.module.css";
+
+.itemCard {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--background-color);
+  border: 1px solid var(--white-gray-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 1px 2px 0 var(--shadow-color);
+  height: 240px;
+  align-items: center;
+  transition: box-shadow 0.3s, transform 0.3s;
+  max-width: 800px;
+}
+
+.itemCard:hover {
+  box-shadow: 0 4px 6px -1px var(--shadow-color-hover), 0 2px 4px -1px var(--shadow-color-hover);
+  transform: translateY(-2px);
+}
+
+.imageContainer {
+  width: 240px;
+  height: 100%;
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.infoContainer {
+  margin-left: 2rem;
+  margin-right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.personId {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.personIdValue {
+  font-family: monospace;
+  color: var(--primary-color);
+  margin-left: 0.5rem;
+}
+
+.metaData {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--secondary-color);
+}
+
+.metaValue {
+  font-weight: 700;
+  color: var(--text-color);
+  margin-left: 0.5rem;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #94a3b8; /* slate-400 equivalent */
+  margin-top: 0.5rem;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 240px;
+  color: var(--secondary-color);
+  background-color: #f8fafc;
+  border-radius: 1rem;
+  margin: 1rem 0;
+}
+

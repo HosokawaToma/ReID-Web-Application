@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import styles from "./item.module.css";
 
 interface PersonSnapshotItemProps {
   token: string | null;
@@ -28,22 +29,12 @@ export default function PersonSnapshotItem({
   }, [token, image_id, personSnapshotImageSearch]);
 
   if (!imageBlob) {
-    return <div>Loading...</div>;
+    return <div className={styles.loading}>Loading...</div>;
   }
 
   return (
-    <div
-      className="flex flex-row rounded-2xl p-4 m-2"
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        border: "1px solid #999",
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: "16px",
-        height: "240px",
-      }}>
-      <div style={{ width: "240px", height: "100%", position: "relative" }}>
+    <div className={styles.itemCard}>
+      <div className={styles.imageContainer}>
         <Image
           src={URL.createObjectURL(imageBlob)}
           alt={`Person ${person_id} (${image_id})`}
@@ -51,26 +42,17 @@ export default function PersonSnapshotItem({
           objectFit="contain"
         />
       </div>
-      <div
-        className="ml-4"
-        style={{
-          marginLeft: "40px",
-          marginRight: "40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          justifyContent: "center",
-        }}>
-        <p className="text-lg font-bold text-slate-800">
-          Person ID: <span className="font-mono text-blue-600">{person_id}</span>
+      <div className={styles.infoContainer}>
+        <p className={styles.personId}>
+          Person ID: <span className={styles.personIdValue}>{person_id}</span>
         </p>
-        <p className="text-sm font-medium text-slate-600">
-          Camera ID: <span className="font-bold text-slate-800">{camera_id}</span>
+        <p className={styles.metaData}>
+          Camera ID: <span className={styles.metaValue}>{camera_id}</span>
         </p>
-        <p className="text-sm font-medium text-slate-600">
-          View ID: <span className="font-bold text-slate-800">{view_id}</span>
+        <p className={styles.metaData}>
+          View ID: <span className={styles.metaValue}>{view_id}</span>
         </p>
-        <p className="text-xs text-slate-400">Timestamp: {timestamp}</p>
+        <p className={styles.timestamp}>Timestamp: {new Date(timestamp).toLocaleString()}</p>
       </div>
     </div>
   );
