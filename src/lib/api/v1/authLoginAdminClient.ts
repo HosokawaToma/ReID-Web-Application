@@ -1,4 +1,5 @@
 export const ApiV1AuthLoginAdminClient = async (id: string, password: string): Promise<string> => {
+  console.log(process.env.NEXT_PUBLIC_API_URL);
   return await fetch(new Request(
     new URL("/api/v1/auth/login/admin_client", process.env.NEXT_PUBLIC_API_URL as string),
     {
