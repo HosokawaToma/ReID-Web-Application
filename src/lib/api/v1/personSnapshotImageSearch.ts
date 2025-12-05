@@ -1,10 +1,10 @@
-export const ApiV1GetPersonImages = async (
+export const ApiV1PersonSnapshotImageSearch = async (
   token: string | null,
   imageId: string
 ): Promise<Blob> => {
   return await fetch(
     new Request(
-      new URL(`/api/v1/person_images/${imageId}`, process.env.NEXT_PUBLIC_API_URL as string),
+      new URL(`/api/v1/person/snapshot/image/search/${imageId}`, process.env.NEXT_PUBLIC_API_URL as string),
       {
         method: "GET",
         headers: {
