@@ -1,5 +1,6 @@
 "use client";
 
+import { ApiV1PersonFlowWeightSearch } from "@/lib/api/v1/personFlowWeightSearch";
 import {
   addEdge,
   Background,
@@ -19,9 +20,8 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
-import { useCallback, useMemo } from "react";
-
 import "@xyflow/react/dist/style.css";
+import { useCallback, useEffect, useMemo } from "react";
 import styles from "./PersonFlowWeight.module.css";
 
 // カスタムエッジの実装
@@ -175,171 +175,177 @@ const edgeTypes = {
   curved: CustomCurvedEdge,
 };
 
-const initialNodes: Node[] = [
-  {
-    id: "camera-1",
-    type: "camera",
-    position: { x: 100, y: 300 },
-    data: { label: "Camera 1" },
-  },
-  {
-    id: "camera-2",
-    type: "camera",
-    position: { x: 500, y: 300 },
-    data: { label: "Camera 2" },
-  },
-  {
-    id: "camera-3",
-    type: "camera",
-    position: { x: 300, y: 50 },
-    data: { label: "Camera 3" },
-  },
-];
+interface PersonFlowWeightProps {
+  token: string | null;
+}
 
-const initialEdges: Edge[] = [
-  // 1 -> 2 (Camera 1の右側から出て、Camera 2の左側に入る)
-  {
-    id: "flow-1-2",
-    source: "camera-1",
-    target: "camera-2",
-    sourceHandle: "source-0",
-    targetHandle: "target-6",
-    label: "120 people",
-    type: "curved",
-    data: { offset: 40 },
-    animated: true,
-    style: { strokeWidth: 8, stroke: "#3b82f6" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6" },
-  },
-  // 2 -> 1 (Camera 2の左側から出て、Camera 1の右側に入る)
-  // 1->2と少しずらす (Camera 2: 6->5, Camera 1: 0->1)
-  {
-    id: "flow-2-1",
-    source: "camera-2",
-    target: "camera-1",
-    sourceHandle: "source-5",
-    targetHandle: "target-1",
-    label: "20 people",
-    type: "curved",
-    data: { offset: 40 },
-    animated: true,
-    style: { strokeWidth: 2, stroke: "#94a3b8" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#94a3b8" },
-  },
-
-  // 2 -> 3 (Camera 2の左上から出て、Camera 3の右下に入る)
-  // Camera 2 (x:500, y:300) -> Camera 3 (x:300, y:50) : 方向はおよそ左上(210度くらい=Handle 7-8付近)
-  // Camera 3 -> Camera 2 : 方向はおよそ右下(30度くらい=Handle 1-2付近)
-  {
-    id: "flow-2-3",
-    source: "camera-2",
-    target: "camera-3",
-    sourceHandle: "source-7",
-    targetHandle: "target-1",
-    label: "80 people",
-    type: "curved",
-    data: { offset: 40 },
-    animated: true,
-    style: { strokeWidth: 6, stroke: "#3b82f6" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6" },
-  },
-  // 3 -> 2
-  // ずらす: Camera 3 (1->2), Camera 2 (7->8)
-  {
-    id: "flow-3-2",
-    source: "camera-3",
-    target: "camera-2",
-    sourceHandle: "source-2",
-    targetHandle: "target-8",
-    label: "15 people",
-    type: "curved",
-    data: { offset: 40 },
-    animated: true,
-    style: { strokeWidth: 2, stroke: "#94a3b8" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#94a3b8" },
-  },
-
-  // 3 -> 1 (Camera 3の左下から出て、Camera 1の右上に入る)
-  // Camera 3 (x:300, y:50) -> Camera 1 (x:100, y:300) : 方向はおよそ左下(150度くらい=Handle 4-5付近)
-  // Camera 1 -> Camera 3 : 方向はおよそ右上(330度くらい=Handle 10-11付近)
-  {
-    id: "flow-3-1",
-    source: "camera-3",
-    target: "camera-1",
-    sourceHandle: "source-4",
-    targetHandle: "target-10",
-    label: "40 people",
-    type: "curved",
-    data: { offset: 40 },
-    animated: true,
-    style: { strokeWidth: 4, stroke: "#3b82f6" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6" },
-  },
-  // 1 -> 3
-  // ずらす: Camera 1 (10->11), Camera 3 (4->5)
-  {
-    id: "flow-1-3",
-    source: "camera-1",
-    target: "camera-3",
-    sourceHandle: "source-11",
-    targetHandle: "target-5",
-    label: "10 people",
-    type: "curved",
-    data: { offset: 40 },
-    animated: true,
-    style: { strokeWidth: 1, stroke: "#94a3b8" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#94a3b8" },
-  },
-  // Self loops (各カメラの空いている場所を使う)
-  // Camera 1: 左上が空いている (Handle 9付近)
-  {
-    id: "flow-1-1",
-    source: "camera-1",
-    target: "camera-1",
-    sourceHandle: "source-9",
-    targetHandle: "target-8", // 隣接させる
-    label: "5 people",
-    type: "curved",
-    animated: true,
-    style: { strokeWidth: 1, stroke: "#94a3b8" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#94a3b8" },
-  },
-  // Camera 2: 右上が空いている (Handle 10-11付近)
-  {
-    id: "flow-2-2",
-    source: "camera-2",
-    target: "camera-2",
-    sourceHandle: "source-11",
-    targetHandle: "target-10",
-    label: "8 people",
-    type: "curved",
-    animated: true,
-    style: { strokeWidth: 1, stroke: "#94a3b8" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#94a3b8" },
-  },
-  // Camera 3: 上が空いている (Handle 9-10付近)
-  {
-    id: "flow-3-3",
-    source: "camera-3",
-    target: "camera-3",
-    sourceHandle: "source-10",
-    targetHandle: "target-9",
-    label: "12 people",
-    type: "curved",
-    animated: true,
-    style: { strokeWidth: 2, stroke: "#94a3b8" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#94a3b8" },
-  },
-];
-
-export default function PersonFlowWeight() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+export default function PersonFlowWeight({ token }: PersonFlowWeightProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchData = async () => {
+      try {
+        const response = await ApiV1PersonFlowWeightSearch(token);
+        console.log("PersonFlowWeight response:", response);
+        const weights = response.weights || [];
+        console.log("PersonFlowWeight weights:", weights);
+
+        if (!Array.isArray(weights)) {
+          console.error("Invalid person_flow_weights data:", weights);
+          return;
+        }
+
+        // 1. ユニークなカメラIDを抽出
+        const cameraIds = Array.from(
+          new Set(weights.flatMap((w) => [w.source_camera_id, w.target_camera_id]))
+        );
+        cameraIds.sort(); // 安定した順序のためにソート
+
+        // 2. ノード生成（円形配置）
+        const centerX = 350; // コンテナの中心付近
+        const centerY = 300;
+        const radius = 220;
+
+        const newNodes: Node[] = cameraIds.map((id, index) => {
+          // -90度(上)からスタートするように調整
+          const angle = (index / cameraIds.length) * 2 * Math.PI - Math.PI / 2;
+          return {
+            id: `camera-${id}`,
+            type: "camera",
+            position: {
+              x: centerX + radius * Math.cos(angle) - 50, // -50はwidth/2
+              y: centerY + radius * Math.sin(angle) - 50, // -50はheight/2
+            },
+            data: { label: `Camera ${id}` },
+          };
+        });
+
+        // 位置取得用のマップ
+        const nodeMap = new Map(newNodes.map((n) => [n.id, n]));
+        const getNodePos = (id: string) => nodeMap.get(`camera-${id}`)?.position;
+
+        // 3. エッジ生成
+        // ハンドル割り当てのための管理マップ
+        const usedSourceHandles = new Map<string, Set<number>>();
+        const usedTargetHandles = new Map<string, Set<number>>();
+
+        const getFreeHandle = (nodeId: string, idealAngle: number, type: "source" | "target") => {
+          const idealIndex = Math.round((idealAngle / (2 * Math.PI)) * 12) % 12;
+          const normalizedIdealIndex = idealIndex < 0 ? idealIndex + 12 : idealIndex;
+
+          const usedMap = type === "source" ? usedSourceHandles : usedTargetHandles;
+          if (!usedMap.has(nodeId)) usedMap.set(nodeId, new Set());
+          const used = usedMap.get(nodeId)!;
+
+          // 空いている最も近いハンドルを探す
+          // 探索順: 0, +1, -1, +2, -2, ...
+          for (let offset = 0; offset <= 6; offset++) {
+            const checkIndices = offset === 0 ? [0] : [offset, -offset];
+            for (const diff of checkIndices) {
+              let idx = (normalizedIdealIndex + diff) % 12;
+              if (idx < 0) idx += 12;
+
+              if (!used.has(idx)) {
+                used.add(idx);
+                return idx;
+              }
+            }
+          }
+          return normalizedIdealIndex; // fallback
+        };
+
+        const newEdges = weights
+          .map((w, i) => {
+            const sourceId = `camera-${w.source_camera_id}`;
+            const targetId = `camera-${w.target_camera_id}`;
+
+            // 自己ループの場合
+            if (sourceId === targetId) {
+              // 上方向(-90度)を基準に空きを探す
+              const handleIdx = getFreeHandle(sourceId, -Math.PI / 2, "source");
+              // sourceとtargetで隣接させる
+              // targetHandleもsourceHandleの隣（時計回り）を使ってみる
+              // ただしCustomCurvedEdgeの制御点ロジックはsource/targetそれぞれの角度を見るので、
+              // 離れた位置だと大きく膨らむ。隣接が一番自然。
+              const targetHandleIdx = (handleIdx + 1) % 12;
+
+              // targetHandleが使われていないかチェックすべきだが、
+              // 自己ループ用の特別枠として使うか、getFreeHandleを使うか。
+              // ここでは簡易的に隣接を使う。もし埋まってたら...まあ重なるだけ。
+
+              // usedTargetHandlesにも登録しておく（念のため）
+              if (!usedTargetHandles.has(targetId)) usedTargetHandles.set(targetId, new Set());
+              usedTargetHandles.get(targetId)!.add(targetHandleIdx);
+
+              return {
+                id: `flow-${w.source_camera_id}-${w.target_camera_id}-${i}`,
+                source: sourceId,
+                target: targetId,
+                sourceHandle: `source-${handleIdx}`,
+                targetHandle: `target-${targetHandleIdx}`,
+                label: `${w.weight} people`,
+                type: "curved",
+                animated: true,
+                style: {
+                  strokeWidth: Math.min(Math.max(w.weight / 10, 1), 10),
+                  stroke: "#94a3b8",
+                },
+                markerEnd: { type: MarkerType.ArrowClosed, color: "#94a3b8" },
+              };
+            }
+
+            const sourcePos = getNodePos(w.source_camera_id);
+            const targetPos = getNodePos(w.target_camera_id);
+
+            if (!sourcePos || !targetPos) return null;
+
+            // 中心座標
+            const sx = sourcePos.x + 50;
+            const sy = sourcePos.y + 50;
+            const tx = targetPos.x + 50;
+            const ty = targetPos.y + 50;
+
+            const angleToTarget = Math.atan2(ty - sy, tx - sx);
+            const angleFromSource = Math.atan2(sy - ty, sx - tx); // Targetから見たSource
+
+            const sourceHandleIdx = getFreeHandle(sourceId, angleToTarget, "source");
+            const targetHandleIdx = getFreeHandle(targetId, angleFromSource, "target");
+
+            return {
+              id: `flow-${w.source_camera_id}-${w.target_camera_id}-${i}`,
+              source: sourceId,
+              target: targetId,
+              sourceHandle: `source-${sourceHandleIdx}`,
+              targetHandle: `target-${targetHandleIdx}`,
+              label: `${w.weight} people`,
+              type: "curved",
+              animated: true,
+              style: {
+                strokeWidth: Math.min(Math.max(w.weight / 10, 2), 15),
+                stroke: "#3b82f6",
+              },
+              markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6" },
+            };
+          })
+          .filter((e) => e !== null) as Edge[];
+
+        setNodes(newNodes);
+        setEdges(newEdges);
+      } catch (error) {
+        console.error("Failed to fetch person flow weights:", error);
+      }
+    };
+
+    fetchData();
+  }, [token, setNodes, setEdges]);
 
   return (
     <div className={styles.graphContainer}>
