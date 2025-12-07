@@ -1,0 +1,27 @@
+@import "../../styles.module.css";
+
+.main {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f8fafc;
+  padding: 2rem;
+}
+
+.title {
+  margin-bottom: 2rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: 6rem;
+  }
+  .title {
+    font-size: 2.25rem;
+  }
+}
+

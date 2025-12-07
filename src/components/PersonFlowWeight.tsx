@@ -22,6 +22,7 @@ import {
 import { useCallback, useMemo } from "react";
 
 import "@xyflow/react/dist/style.css";
+import styles from "./PersonFlowWeight.module.css";
 
 // カスタムエッジの実装
 const CustomCurvedEdge = ({
@@ -33,8 +34,8 @@ const CustomCurvedEdge = ({
   targetHandleId,
   style = {},
   markerEnd,
-  label,
-}: EdgeProps) => {
+}: // label,
+EdgeProps) => {
   // Handle IDからインデックスを抽出して角度(ラジアン)を計算する関数
   const getHandleAngle = (handleId: string | null | undefined) => {
     if (!handleId) return 0;
@@ -341,9 +342,7 @@ export default function PersonFlowWeight() {
   );
 
   return (
-    <div
-      className="h-[600px] w-full border border-slate-200 rounded-lg shadow-sm bg-white"
-      style={{ height: "600px" }}>
+    <div className={styles.graphContainer}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -361,4 +360,3 @@ export default function PersonFlowWeight() {
     </div>
   );
 }
-
