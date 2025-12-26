@@ -2,6 +2,7 @@
 
 import IdentityPersonList from "@/components/person_snapshot/list";
 import PersonSnapshotSearchForm from "@/components/person_snapshot/search_form";
+import PersonFlowWeight from "@/components/PersonFlowWeight";
 
 import { ApiV1PersonSnapshotImageSearch } from "@/lib/api/v1/personSnapshotImageSearch";
 import {
@@ -44,6 +45,12 @@ export default function Dashboard() {
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-50 p-8 md:p-24">
       <h1 className="mb-8 text-3xl font-bold text-slate-800 md:text-4xl">ダッシュボード</h1>
+
+      {/* Person Flow Graph */}
+      <div className="w-full max-w-7xl mb-12">
+        <h2 className="mb-4 text-xl font-semibold text-slate-800">Person Flow Graph</h2>
+        <div className="w-full">{token && <PersonFlowWeight token={token} />}</div>
+      </div>
 
       <PersonSnapshotSearchForm onSearch={setRequest} />
 
