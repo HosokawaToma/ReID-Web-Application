@@ -1,6 +1,6 @@
-export const ApiV1AuthRefreshAdminClient = async (): Promise<string> => {
+export const ApiV1AdminAuthTokenRefresh = async (): Promise<string> => {
   return await fetch(new Request(
-    new URL("/api/v1/auth/login/admin_client/refresh", process.env.NEXT_PUBLIC_API_URL as string),
+    new URL("/api/v1/admin/auth/token/refresh", process.env.NEXT_PUBLIC_API_URL as string),
     {
       method: "POST",
     }

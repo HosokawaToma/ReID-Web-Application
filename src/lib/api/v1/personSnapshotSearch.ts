@@ -18,6 +18,7 @@ export interface PersonSnapshotSearchRequest {
     camera_ids: number[] | null;
     view_ids: number[] | null;
     person_ids: string[] | null;
+    is_junk: boolean | null;
     after_timestamp: string | null;
     before_timestamp: string | null;
   };
