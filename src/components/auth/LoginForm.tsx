@@ -1,15 +1,15 @@
 "use client";
 
 import styles from "@/components/auth/LoginForm.module.css";
+import { ApiV1AdminAuthLogin } from "@/lib/api/v1/adminAuthLogin";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface LoginFormProps {
-  login: (id: string, password: string) => Promise<string | null>;
   setToken: (token: string | null) => void;
 }
 
-export default function LoginForm({ login, setToken }: LoginFormProps) {
+export default function LoginForm({ setToken }: LoginFormProps) {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const router = useRouter();
@@ -19,8 +19,8 @@ export default function LoginForm({ login, setToken }: LoginFormProps) {
     const form = e.target as HTMLFormElement & { id: HTMLInputElement; password: HTMLInputElement };
     const id = form.id.value;
     const password = form.password.value;
-    login(id, password)
-      .then((token) => {
+    ApiV1AdminAuthLogin(id, password)
+      .then((token: string) => {
         setToken(token);
         setError(false);
         setErrorMessage("");
