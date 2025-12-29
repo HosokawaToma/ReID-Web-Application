@@ -1,8 +1,8 @@
 "use client";
 
 import { PersonSnapshot } from "@/types/personSnapshots";
+import styles from "../styles/index.module.css";
 import PersonSnapshotItem from "./item";
-import styles from "./list.module.css";
 
 export interface PersonSnapshotListProps {
   personSnapshots: PersonSnapshot[];
@@ -11,7 +11,7 @@ export interface PersonSnapshotListProps {
 
 export default function PersonSnapshotList({ personSnapshots, onPersonIdClickAction }: PersonSnapshotListProps) {
   return (
-    <div className={styles.container}>
+    <div className={styles.listContainer}>
       {personSnapshots.map((personSnapshot) => (
         <PersonSnapshotItem
           key={personSnapshot.id}

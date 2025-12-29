@@ -1,5 +1,3 @@
-@import "../../app/styles.module.css";
-
 .headerContent {
   display: flex;
   justify-content: space-between;

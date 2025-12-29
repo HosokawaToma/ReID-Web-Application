@@ -3,8 +3,7 @@
 import { PersonSnapshot } from "@/types/personSnapshots";
 import Image from "next/image";
 import { useEffect, useMemo } from "react";
-import styles from "./item.module.css";
-
+import styles from "../styles/index.module.css";
 export interface PersonSnapshotItemProps {
   personSnapshot: PersonSnapshot;
   onPersonIdClickAction: (personId: string) => void;

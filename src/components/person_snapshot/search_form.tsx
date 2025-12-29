@@ -109,7 +109,7 @@ export default function PersonSnapshotSearchForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className={styles.defaultFormContainer}>
+      <div className={`${styles.defaultFormContainer} ${styles.personSnapshotSearchFormContainer}`}>
         <div className={styles.formGroup}>
           <label htmlFor="personId" className={styles.label}>
             Person ID
