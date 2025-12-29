@@ -2,6 +2,7 @@
 
 import { PersonSnapshot } from "@/types/personSnapshots";
 import PersonSnapshotItem from "./item";
+import styles from "./list.module.css";
 
 export interface PersonSnapshotListProps {
   personSnapshots: PersonSnapshot[];
@@ -10,9 +11,7 @@ export interface PersonSnapshotListProps {
 
 export default function PersonSnapshotList({ personSnapshots, onPersonIdClickAction }: PersonSnapshotListProps) {
   return (
-    <div
-      className="flex flex-col items-center gap-6"
-      style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "24px" }}>
+    <div className={styles.container}>
       {personSnapshots.map((personSnapshot) => (
         <PersonSnapshotItem
           key={personSnapshot.id}
