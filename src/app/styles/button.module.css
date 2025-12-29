@@ -1,0 +1,44 @@
+.defaultButton {
+  font-size: var(--font-size-default);
+  font-weight: 600;
+  color: var(--default-text-color);
+  background-color: var(--default-background-color);
+  border: 1px solid var(--default-border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 4px 8px var(--default-shadow-color);
+  padding: 0.5rem 1rem;
+}
+
+.defaultButton:hover {
+  box-shadow: 0 6px 12px var(--default-shadow-color-hover);
+  transform: translateY(-2px);
+}
+
+.defaultButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px var(--default-shadow-color);
+}
+
+.primaryButton {
+  font-size: var(--font-size-default);
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--primary-border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 4px 8px var(--primary-shadow-color);
+  padding: 0.5rem 1rem;
+}
+
+.primaryButton:hover {
+  box-shadow: 0 6px 12px var(--primary-shadow-color-hover);
+  transform: translateY(-2px);
+}
+
+.primaryButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px var(--primary-shadow-color);
+}

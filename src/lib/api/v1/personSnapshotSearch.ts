@@ -4,22 +4,22 @@ export interface PersonSnapshotSearchResponse {
 
 export interface PersonSnapshot {
   id: string;
-  image_id: string;
-  person_id: string;
   camera_id: number;
   view_id: number;
   timestamp: string;
+  is_junk: boolean;
+  person_id: string | null;
 }
 
 export interface PersonSnapshotSearchRequest {
   filters: {
     ids: string[] | null;
-    image_ids: string[] | null;
     camera_ids: number[] | null;
     view_ids: number[] | null;
     person_ids: string[] | null;
-    after_timestamp: string | null;
-    before_timestamp: string | null;
+    is_junk: boolean | null;
+    timestamp_after: string | null;
+    timestamp_before: string | null;
   };
   ordering: {
     timestamp_asc: boolean | null;

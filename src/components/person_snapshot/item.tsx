@@ -1,66 +1,53 @@
 "use client";
 
+import { PersonSnapshot } from "@/types/personSnapshots";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import styles from "./item.module.css";
 
-interface PersonSnapshotItemProps {
-  token: string | null;
-  personSnapshotImageSearch: (token: string | null, imageId: string) => Promise<Blob>;
-  image_id: string;
-  person_id: string;
-  camera_id: number;
-  view_id: number;
-  timestamp: string;
-  onPersonIdClick: (personId: string) => void;
+export interface PersonSnapshotItemProps {
+  personSnapshot: PersonSnapshot;
+  onPersonIdClickAction: (personId: string) => void;
 }
 
 export default function PersonSnapshotItem({
-  token,
-  personSnapshotImageSearch,
-  image_id,
-  person_id,
-  camera_id,
-  view_id,
-  timestamp,
-  onPersonIdClick,
+  personSnapshot,
+  onPersonIdClickAction,
 }: PersonSnapshotItemProps) {
-  const [imageBlob, setImageBlob] = useState<Blob | null>(null);
-  useEffect(() => {
-    personSnapshotImageSearch(token, image_id).then((blob) => setImageBlob(blob));
-  }, [token, image_id, personSnapshotImageSearch]);
+  const isJunk = personSnapshot.isJunk;
 
-  if (!imageBlob) {
-    return <div className={styles.loading}>Loading...</div>;
-  }
+  const imageUrl = useMemo(() => {
+    if (!personSnapshot.imageBlob) return null;
+    return URL.createObjectURL(personSnapshot.imageBlob);
+  }, [personSnapshot.imageBlob]);
+
+  useEffect(() => {
+    return () => {
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+    };
+  }, [imageUrl]);
 
   return (
-    <div className={styles.itemCard}>
-      <div className={styles.imageContainer}>
-        <Image
-          src={URL.createObjectURL(imageBlob)}
-          alt={`Person ${person_id} (${image_id})`}
-          layout="fill"
-          objectFit="contain"
-        />
+    <div className={isJunk ? styles.errorCard : styles.defaultCard}>
+      <div className={isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
+        <div className={isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
+          { isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
+          {imageUrl && (
+            <Image
+              src={imageUrl}
+              alt="Person Snapshot Image"
+              fill
+              style={{ objectFit: "contain" }}
+            />
+          )}
+          {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
+        </div>
       </div>
-      <div className={styles.infoContainer}>
-        <p className={styles.personId}>
-          Person ID:
-          <button
-            type="button"
-            onClick={() => onPersonIdClick(person_id)}
-            className={styles.personIdValue}>
-            {person_id}
-          </button>
-        </p>
-        <p className={styles.metaData}>
-          Camera ID: <span className={styles.metaValue}>{camera_id}</span>
-        </p>
-        <p className={styles.metaData}>
-          View ID: <span className={styles.metaValue}>{view_id}</span>
-        </p>
-        <p className={styles.timestamp}>Timestamp: {new Date(timestamp).toLocaleString()}</p>
+      <div className={styles.cardMetaDataContainer}>
+        <p className={styles.cardMainMetaDataText}>Person ID: {personSnapshot.personId}</p>
+        <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
+        <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
+        <p className={styles.cardMetaDataText}>Timestamp: {personSnapshot.timestamp.toLocaleString()}</p>
       </div>
     </div>
   );

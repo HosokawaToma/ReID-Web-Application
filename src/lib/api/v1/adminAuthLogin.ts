@@ -1,13 +1,12 @@
-export const ApiV1AuthLoginAdminClient = async (id: string, password: string): Promise<string> => {
-  console.log(process.env.NEXT_PUBLIC_API_URL);
+export const ApiV1AdminAuthLogin = async (id: string, password: string): Promise<string> => {
   return await fetch(new Request(
-    new URL("/api/v1/auth/login/admin_client", process.env.NEXT_PUBLIC_API_URL as string),
+    new URL("/api/v1/admin/auth/login", process.env.NEXT_PUBLIC_API_URL as string),
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ admin_client_id: id, password: password }),
+      body: JSON.stringify({ id: id, password: password }),
     }
   )).then(async (response) => {
     if (response.status !== 200) {

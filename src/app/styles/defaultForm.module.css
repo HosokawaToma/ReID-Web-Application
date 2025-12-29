@@ -1,8 +1,0 @@
-.defaultForm {
-  display: flex;
-  align-items: center;
-  border-radius: 12px;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0 auto;
-}
