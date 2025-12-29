@@ -2,6 +2,7 @@
 
 import { PersonSnapshot } from "@/types/personSnapshots";
 import Image from "next/image";
+import { useEffect, useMemo } from "react";
 import styles from "./item.module.css";
 
 export interface PersonSnapshotItemProps {
@@ -9,21 +10,36 @@ export interface PersonSnapshotItemProps {
   onPersonIdClickAction: (personId: string) => void;
 }
 
-export default function PersonSnapshotItem({ personSnapshot, onPersonIdClickAction }: PersonSnapshotItemProps) {
+export default function PersonSnapshotItem({
+  personSnapshot,
+  onPersonIdClickAction,
+}: PersonSnapshotItemProps) {
+  const isJunk = personSnapshot.isJunk;
+
+  const imageUrl = useMemo(() => {
+    if (!personSnapshot.imageBlob) return null;
+    return URL.createObjectURL(personSnapshot.imageBlob);
+  }, [personSnapshot.imageBlob]);
+
+  useEffect(() => {
+    return () => {
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+    };
+  }, [imageUrl]);
+
   return (
-    <div className={styles.itemCard}>
-      <div className={styles.imageContainer}>
-        {personSnapshot.imageBlob && (
-        <Image
-          src={URL.createObjectURL(personSnapshot.imageBlob)}
-          alt={`Person Snapshot Image`}
-            layout="fill"
-            objectFit="contain"
+    <div className={`${styles.itemCard} ${isJunk ? styles.itemCardJunk : ""}`}>
+      <div className={`${styles.imageContainer} ${isJunk ? styles.imageContainerJunk : ""}`}>
+        {isJunk && <div className={styles.junkBadge}>JUNK</div>}
+        {imageUrl && (
+          <Image
+            src={imageUrl}
+            alt="Person Snapshot Image"
+            fill
+            style={{ objectFit: "contain" }}
           />
         )}
-        {!personSnapshot.imageBlob && (
-          <div className={styles.loading}>Loading...</div>
-        )}
+        {!imageUrl && <div className={styles.loading}>Loading...</div>}
       </div>
       <div className={styles.infoContainer}>
         <p className={styles.personId}>
@@ -31,14 +47,14 @@ export default function PersonSnapshotItem({ personSnapshot, onPersonIdClickActi
           {personSnapshot.personId && (
             <button
               type="button"
-              onClick={() => personSnapshot.personId && onPersonIdClickAction(personSnapshot.personId)}
+              onClick={() =>
+                personSnapshot.personId && onPersonIdClickAction(personSnapshot.personId)
+              }
               className={styles.personIdValue}>
               {personSnapshot.personId}
             </button>
           )}
-          {!personSnapshot.personId && (
-            <span className={styles.personIdValue}>No person ID</span>
-          )}
+          {!personSnapshot.personId && <span className={styles.personIdValue}>No person ID</span>}
         </p>
         <p className={styles.metaData}>
           Camera ID: <span className={styles.metaValue}>{personSnapshot.cameraId}</span>
