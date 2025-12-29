@@ -1,0 +1,61 @@
+.defaultCard {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--default-background-color);
+  border: 1px solid var(--default-border-color);
+  box-shadow: 0 1px 2px 0 var(--default-shadow-color);
+  transition: box-shadow 0.3s, transform 0.3s;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.defaultCard:hover {
+  box-shadow: 0 4px 6px -1px var(--default-shadow-color-hover), 0 2px 4px -1px var(--default-shadow-color-hover);
+  transform: translateY(-2px);
+}
+
+.errorCard {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--default-background-color);
+  border: 1px solid var(--error-color);
+  box-shadow: 0 1px 2px 0 var(--error-shadow-color);
+  transition: box-shadow 0.3s, transform 0.3s;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.errorCard:hover {
+  box-shadow: 0 4px 6px -1px var(--error-shadow-color-hover), 0 2px 4px -1px var(--error-shadow-color-hover);
+  transform: translateY(-2px);
+}
+
+.cardMetaDataContainer {
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardMainMetaDataText {
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-medium);
+  color: var(--default-text-color);
+}
+
+.cardMainMetaDataValueText {
+  font-weight: var(--font-weight-medium);
+  color: var(--default-text-color);
+}
+
+.cardMetaDataText {
+  font-size: var(--font-size-default);
+  color: var(--default-secondary-text-color);
+}
+
+.cardMetaDataValueText {
+  color: var(--default-secondary-text-color);
+}

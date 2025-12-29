@@ -28,41 +28,26 @@ export default function PersonSnapshotItem({
   }, [imageUrl]);
 
   return (
-    <div className={`${styles.itemContainer} ${isJunk ? styles.itemContainerJunk : ""}`}>
-      <div className={`${styles.imageContainer} ${isJunk ? styles.imageContainerJunk : ""}`}>
-        {isJunk && <div className={styles.junkBadge}>JUNK</div>}
-        {imageUrl && (
-          <Image
-            src={imageUrl}
-            alt="Person Snapshot Image"
-            fill
-            style={{ objectFit: "contain" }}
-          />
-        )}
-        {!imageUrl && <div className={styles.loading}>Loading...</div>}
-      </div>
-      <div className={styles.infoContainer}>
-        <p className={styles.personId}>
-          Person ID:
-          {personSnapshot.personId && (
-            <button
-              type="button"
-              onClick={() =>
-                personSnapshot.personId && onPersonIdClickAction(personSnapshot.personId)
-              }
-              className={styles.personIdValue}>
-              {personSnapshot.personId}
-            </button>
+    <div className={isJunk ? styles.errorCard : styles.defaultCard}>
+      <div className={isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
+        <div className={isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
+          { isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
+          {imageUrl && (
+            <Image
+              src={imageUrl}
+              alt="Person Snapshot Image"
+              fill
+              style={{ objectFit: "contain" }}
+            />
           )}
-          {!personSnapshot.personId && <span className={styles.personIdValue}>No person ID</span>}
-        </p>
-        <p className={styles.metaData}>
-          Camera ID: <span className={styles.metaValue}>{personSnapshot.cameraId}</span>
-        </p>
-        <p className={styles.metaData}>
-          View ID: <span className={styles.metaValue}>{personSnapshot.viewId}</span>
-        </p>
-        <p className={styles.timestamp}>Timestamp: {personSnapshot.timestamp.toLocaleString()}</p>
+          {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
+        </div>
+      </div>
+      <div className={styles.cardMetaDataContainer}>
+        <p className={styles.cardMainMetaDataText}>Person ID: {personSnapshot.personId}</p>
+        <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
+        <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
+        <p className={styles.cardMetaDataText}>Timestamp: {personSnapshot.timestamp.toLocaleString()}</p>
       </div>
     </div>
   );
