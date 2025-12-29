@@ -1,0 +1,22 @@
+@import "../../app/styles.module.css";
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--default-background-color);
+  border-bottom: 1px solid var(--default-border-color);
+}
+
+.headerNavigation {
+  display: flex;
+  gap: 1rem;
+}
+
+.headerNavigationLink {
+  text-decoration: none;
+  color: var(--default-text-color);
+  font-size: var(--font-size-default);
+  font-weight: var(--font-weight-medium);
+}

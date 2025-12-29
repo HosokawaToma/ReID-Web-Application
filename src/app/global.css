@@ -31,3 +31,16 @@
 
   --font-weight-medium: 700;
 }
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100dvh;
+  width: 100%;
+}

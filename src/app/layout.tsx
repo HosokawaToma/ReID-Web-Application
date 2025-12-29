@@ -1,6 +1,9 @@
+import Global from "@/components/global";
+import Header from "@/components/header";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { TokenProvider } from "./context/TokenContext";
+import "./global.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,7 +20,14 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
-        <TokenProvider>{children}</TokenProvider>
+        <Header />
+        <main>
+          <div style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <TokenProvider>
+              <Global>{children}</Global>
+            </TokenProvider>
+          </div>
+        </main>
       </body>
     </html>
   );

@@ -1,25 +1,17 @@
 "use client";
 
 import LoginForm from "@/components/auth/LoginForm";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useTokenContext } from "./context/TokenContext";
+import styles from "./styles.module.css";
 
 export default function Home() {
-  const { token, setToken } = useTokenContext();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (token) {
-      router.push("/dashboard");
-    }
-  }, [token, router]);
-
+  const { setToken } = useTokenContext();
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="w-full max-w-md">
-        <h1 className="text-4xl font-bold text-center mb-8">ログイン</h1>
-        <LoginForm setToken={setToken} />
+    <main>
+      <div className={styles.fullscreenPageContainer}>
+        <div style={{ width: "500px", height: "500px" }}>
+          <LoginForm setToken={setToken}/>
+        </div>
       </div>
     </main>
   );
