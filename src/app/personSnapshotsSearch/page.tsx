@@ -33,7 +33,7 @@ export default function PersonSnapshotsSearch() {
   }, [searchPersonSnapshots]);
 
   return (
-  <>
+  <div style={{ width: "80%", height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
     <PersonSnapshotSearchForm
       personIds={personIds}
       cameraIds={cameraIds}
@@ -55,6 +55,6 @@ export default function PersonSnapshotsSearch() {
       onSubmitAction={searchPersonSnapshots}
     />
     <PersonSnapshotList personSnapshots={personSnapshots} onPersonIdClickAction={addPersonId} />
-  </>
+  </div>
   );
 }
