@@ -28,7 +28,7 @@ export default function PersonSnapshotItem({
   }, [imageUrl]);
 
   return (
-    <div className={`${styles.itemCard} ${isJunk ? styles.itemCardJunk : ""}`}>
+    <div className={`${styles.itemContainer} ${isJunk ? styles.itemContainerJunk : ""}`}>
       <div className={`${styles.imageContainer} ${isJunk ? styles.imageContainerJunk : ""}`}>
         {isJunk && <div className={styles.junkBadge}>JUNK</div>}
         {imageUrl && (

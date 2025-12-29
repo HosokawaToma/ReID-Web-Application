@@ -1,6 +1,6 @@
 @import "../../app/styles.module.css";
 
-.itemCard {
+.itemContainer {
   display: flex;
   flex-direction: row;
   background-color: var(--background-color);
@@ -18,21 +18,21 @@
   box-sizing: border-box;
 }
 
-.itemCard:hover {
+.itemContainer:hover {
   box-shadow: 0 4px 6px -1px var(--shadow-color-hover), 0 2px 4px -1px var(--shadow-color-hover);
   transform: translateY(-2px);
 }
 
-.itemCardJunk {
+.itemContainerJunk {
   border-color: rgba(239, 68, 68, 0.55); /* red-500 */
   background: linear-gradient(0deg, rgba(239, 68, 68, 0.04), rgba(239, 68, 68, 0.04)),
     var(--background-color);
   opacity: 0.88;
 }
 
-.itemCardJunk:hover {
-  transform: none;
-  box-shadow: 0 2px 6px 0 var(--shadow-color-hover);
+.itemContainerJunk:hover {
+  box-shadow: 0 4px 6px -1px var(--shadow-color-error-hover), 0 2px 4px -1px var(--shadow-color-error-hover);
+  transform: translateY(-2px);
 }
 
 .imageContainer {
