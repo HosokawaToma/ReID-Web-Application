@@ -1,66 +1,52 @@
 "use client";
 
+import { PersonSnapshot } from "@/types/personSnapshots";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import styles from "./item.module.css";
 
-interface PersonSnapshotItemProps {
-  token: string | null;
-  personSnapshotImageSearch: (token: string | null, imageId: string) => Promise<Blob>;
-  image_id: string;
-  person_id: string;
-  camera_id: number;
-  view_id: number;
-  timestamp: string;
-  onPersonIdClick: (personId: string) => void;
+export interface PersonSnapshotItemProps {
+  personSnapshot: PersonSnapshot;
+  onPersonIdClickAction: (personId: string) => void;
 }
 
-export default function PersonSnapshotItem({
-  token,
-  personSnapshotImageSearch,
-  image_id,
-  person_id,
-  camera_id,
-  view_id,
-  timestamp,
-  onPersonIdClick,
-}: PersonSnapshotItemProps) {
-  const [imageBlob, setImageBlob] = useState<Blob | null>(null);
-  useEffect(() => {
-    personSnapshotImageSearch(token, image_id).then((blob) => setImageBlob(blob));
-  }, [token, image_id, personSnapshotImageSearch]);
-
-  if (!imageBlob) {
-    return <div className={styles.loading}>Loading...</div>;
-  }
-
+export default function PersonSnapshotItem({ personSnapshot, onPersonIdClickAction }: PersonSnapshotItemProps) {
   return (
     <div className={styles.itemCard}>
       <div className={styles.imageContainer}>
+        {personSnapshot.imageBlob && (
         <Image
-          src={URL.createObjectURL(imageBlob)}
-          alt={`Person ${person_id} (${image_id})`}
-          layout="fill"
-          objectFit="contain"
-        />
+          src={URL.createObjectURL(personSnapshot.imageBlob)}
+          alt={`Person Snapshot Image`}
+            layout="fill"
+            objectFit="contain"
+          />
+        )}
+        {!personSnapshot.imageBlob && (
+          <div className={styles.loading}>Loading...</div>
+        )}
       </div>
       <div className={styles.infoContainer}>
         <p className={styles.personId}>
           Person ID:
-          <button
-            type="button"
-            onClick={() => onPersonIdClick(person_id)}
-            className={styles.personIdValue}>
-            {person_id}
-          </button>
+          {personSnapshot.personId && (
+            <button
+              type="button"
+              onClick={() => personSnapshot.personId && onPersonIdClickAction(personSnapshot.personId)}
+              className={styles.personIdValue}>
+              {personSnapshot.personId}
+            </button>
+          )}
+          {!personSnapshot.personId && (
+            <span className={styles.personIdValue}>No person ID</span>
+          )}
         </p>
         <p className={styles.metaData}>
-          Camera ID: <span className={styles.metaValue}>{camera_id}</span>
+          Camera ID: <span className={styles.metaValue}>{personSnapshot.cameraId}</span>
         </p>
         <p className={styles.metaData}>
-          View ID: <span className={styles.metaValue}>{view_id}</span>
+          View ID: <span className={styles.metaValue}>{personSnapshot.viewId}</span>
         </p>
-        <p className={styles.timestamp}>Timestamp: {new Date(timestamp).toLocaleString()}</p>
+        <p className={styles.timestamp}>Timestamp: {personSnapshot.timestamp.toLocaleString()}</p>
       </div>
     </div>
   );

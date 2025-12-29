@@ -1,66 +1,66 @@
 "use client";
 
-import IdentityPersonList from "@/components/person_snapshot/list";
+import PersonSnapshotList from "@/components/person_snapshot/list";
 import PersonSnapshotSearchForm from "@/components/person_snapshot/search_form";
-import PersonFlowWeight from "@/components/PersonFlowWeight";
-
-import { ApiV1PersonSnapshotImageSearch } from "@/lib/api/v1/personSnapshotImageSearch";
-import {
-  ApiV1PersonSnapshotSearch,
-  PersonSnapshotSearchRequest,
-} from "@/lib/api/v1/personSnapshotSearch";
+import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 export default function Dashboard() {
-  const { token } = useTokenContext();
   const router = useRouter();
-  const [request, setRequest] = useState<PersonSnapshotSearchRequest | null>(null);
+  const { token } = useTokenContext();
+  const {
+    personIds,
+    cameraIds,
+    viewIds,
+    isJunk,
+    afterTimestamp,
+    beforeTimestamp,
+    sortOrderByTimestamp,
+    personSnapshots,
+    setPersonIds,
+    setCameraIds,
+    setViewIds,
+    setIsJunk,
+    setAfterTimestamp,
+    setBeforeTimestamp,
+    setSortOrderByTimestamp,
+    searchPersonSnapshots,
+    addPersonId,
+  } = usePersonSnapshotSearch(token);
 
   useEffect(() => {
     if (!token) {
       router.push("/");
+      return;
     }
-  }, [token, router]);
-
-  const handlePersonIdClick = (personId: string) => {
-    setRequest({
-      filters: {
-        ids: null,
-        image_ids: null,
-        camera_ids: null,
-        view_ids: null,
-        person_ids: [personId],
-        after_timestamp: null,
-        before_timestamp: null,
-      },
-      ordering: {
-        timestamp_asc: null,
-        timestamp_desc: true,
-      },
-    });
-  };
+    searchPersonSnapshots();
+  }, [token, router, searchPersonSnapshots]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-slate-50 p-8 md:p-24">
-      <h1 className="mb-8 text-3xl font-bold text-slate-800 md:text-4xl">ダッシュボード</h1>
-
-      {/* Person Flow Graph */}
-      <div className="w-full max-w-7xl mb-12">
-        <h2 className="mb-4 text-xl font-semibold text-slate-800">Person Flow Graph</h2>
-        <div className="w-full">{token && <PersonFlowWeight token={token} />}</div>
-      </div>
-
-      <PersonSnapshotSearchForm onSearch={setRequest} />
-
-      <IdentityPersonList
-        token={token}
-        request={request}
-        personSnapshotSearch={ApiV1PersonSnapshotSearch}
-        personSnapshotImageSearch={ApiV1PersonSnapshotImageSearch}
-        onPersonIdClick={handlePersonIdClick}
+    <main>
+      <PersonSnapshotSearchForm
+        personIds={personIds}
+        cameraIds={cameraIds}
+        viewIds={viewIds}
+        isJunk={isJunk}
+        afterTimestamp={afterTimestamp}
+        beforeTimestamp={beforeTimestamp}
+        sortOrderByTimestamp={sortOrderByTimestamp}
+        setPersonIds={setPersonIds}
+        setCameraIds={setCameraIds}
+        setViewIds={setViewIds}
+        setIsJunk={setIsJunk}
+        setAfterTimestamp={setAfterTimestamp}
+        setBeforeTimestamp={setBeforeTimestamp}
+        setSortOrderByTimestamp={setSortOrderByTimestamp}
+        personIdsOption={[]}
+        cameraIdsOption={[]}
+        viewIdsOption={[]}
+        onSubmitAction={searchPersonSnapshots}
       />
+      <PersonSnapshotList personSnapshots={personSnapshots} onPersonIdClickAction={addPersonId} />
     </main>
   );
 }
