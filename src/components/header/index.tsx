@@ -6,9 +6,15 @@ export default function Header() {
     <header>
       <div className={styles.headerContent}>
         <div className={styles.headerNavigation}>
-          <Link href="/dashboard" className={styles.headerNavigationLink}>Dashboard</Link>
-          <Link href="/personSnapshotsSearch" className={styles.headerNavigationLink}>Person Snapshots Search</Link>
-          <Link href="/personFlowWeight" className={styles.headerNavigationLink}>Person Flow Weight</Link>
+            <Link href="/dashboard" className={styles.headerNavigationLink}>
+              <div className={styles.headerNavigationItem}>Dashboard</div>
+            </Link>
+          <Link href="/personSnapshotsSearch" className={styles.headerNavigationLink}>
+            <div className={styles.headerNavigationItem}>Person Snapshots Search</div>
+          </Link>
+          <Link href="/personFlowWeight" className={styles.headerNavigationLink}>
+            <div className={styles.headerNavigationItem}>Person Flow Weight</div>
+          </Link>
         </div>
       </div>
     </header>

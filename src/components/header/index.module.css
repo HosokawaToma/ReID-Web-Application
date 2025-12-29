@@ -1,15 +1,14 @@
 .headerContent {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
   background-color: var(--default-background-color);
   border-bottom: 1px solid var(--default-border-color);
+  width: 100%;
+  height: 5dvh;
 }
 
 .headerNavigation {
   display: flex;
-  gap: 1rem;
+  width: 100%;
+  height: 100%;
 }
 
 .headerNavigationLink {
@@ -17,4 +16,16 @@
   color: var(--default-text-color);
   font-size: var(--font-size-default);
   font-weight: var(--font-weight-medium);
+  width: 100%;
+  height: 100%;
+}
+
+.headerNavigationItem {
+  border-right: 1px solid var(--default-border-color);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-wrap: nowrap;
 }
