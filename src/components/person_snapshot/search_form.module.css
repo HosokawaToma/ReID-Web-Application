@@ -1,7 +1,7 @@
-@import "../../app/styles.module.css";
+@import "../styles/index.module.css";
 
 @media (min-width: 768px) {
-  .defaultFormContainer {
+  .personSnapshotSearchFormContainer {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;

@@ -22,7 +22,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useMemo } from "react";
-import styles from "./PersonFlowWeight.module.css";
+import styles from "./index.module.css";
 
 // カスタムエッジの実装
 const CustomCurvedEdge = ({

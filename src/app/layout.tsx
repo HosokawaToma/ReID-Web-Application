@@ -1,6 +1,9 @@
+import Global from "@/components/global";
+import Header from "@/components/header";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { TokenProvider } from "./context/TokenContext";
+import "./global.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,9 +18,43 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
-      <body className={inter.className}>
-        <TokenProvider>{children}</TokenProvider>
+    <html lang="ja" style={{ width: "100vw", height: "100dvh", overflow: "hidden" }}>
+      <body
+        className={inter.className}
+        style={{
+          width: "100vw",
+          height: "100dvh",
+          margin: 0,
+          padding: 0,
+          overflow: "hidden",
+        }}
+      >
+        <main
+          style={{
+            width: "100vw",
+            height: "100dvh",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <Header />
+          <div
+            style={{
+              flex: 1,
+              width: "100vw",
+              height: 0,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              overflow: "hidden",
+            }}
+          >
+            <TokenProvider>
+              <Global>{children}</Global>
+            </TokenProvider>
+          </div>
+        </main>
       </body>
     </html>
   );

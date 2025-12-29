@@ -1,9 +1,9 @@
 "use client";
 
-import styles from "@/components/auth/LoginForm.module.css";
 import { ApiV1AdminAuthLogin } from "@/lib/api/v1/adminAuthLogin";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import styles from "../styles/index.module.css";
 
 interface LoginFormProps {
   setToken: (token: string | null) => void;
