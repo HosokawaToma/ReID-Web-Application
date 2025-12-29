@@ -12,7 +12,10 @@
   height: 240px;
   align-items: center;
   transition: box-shadow 0.3s, transform 0.3s;
-  max-width: 800px;
+  /* PersonSnapshotList が align-items:center のため、幅指定がないと内容に合わせて縮むことがある */
+  width: 100%;
+  max-width: 1024px; /* searchForm と揃える */
+  box-sizing: border-box;
 }
 
 .itemCard:hover {
@@ -22,8 +25,7 @@
 
 .itemCardJunk {
   border-color: rgba(239, 68, 68, 0.55); /* red-500 */
-  background:
-    linear-gradient(0deg, rgba(239, 68, 68, 0.04), rgba(239, 68, 68, 0.04)),
+  background: linear-gradient(0deg, rgba(239, 68, 68, 0.04), rgba(239, 68, 68, 0.04)),
     var(--background-color);
   opacity: 0.88;
 }
