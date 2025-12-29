@@ -18,11 +18,38 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
-      <body className={inter.className}>
-        <Header />
-        <main>
-          <div style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+    <html lang="ja" style={{ width: "100vw", height: "100dvh", overflow: "hidden" }}>
+      <body
+        className={inter.className}
+        style={{
+          width: "100vw",
+          height: "100dvh",
+          margin: 0,
+          padding: 0,
+          overflow: "hidden",
+        }}
+      >
+        <main
+          style={{
+            width: "100vw",
+            height: "100dvh",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <Header />
+          <div
+            style={{
+              flex: 1,
+              width: "100vw",
+              height: 0,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              overflow: "hidden",
+            }}
+          >
             <TokenProvider>
               <Global>{children}</Global>
             </TokenProvider>
