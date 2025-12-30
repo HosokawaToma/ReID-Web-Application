@@ -11,6 +11,7 @@ import { useTokenContext } from "../context/TokenContext";
 
 export default function FrameSearch() {
   const { token } = useTokenContext();
+  const { selectedFrame, setSelectedFrame } = useFrameSelect();
   const {
     ids,
     cameraIds,
@@ -26,12 +27,17 @@ export default function FrameSearch() {
     setBeforeTimestamp,
     setSortOrderByTimestamp,
     searchFrames,
-  } = useFrameSearch(token);
-  const { selectedFrame, setSelectedFrame } = useFrameSelect();
+  } = useFrameSearch({ token });
 
   useEffect(() => {
     searchFrames();
   }, [searchFrames]);
+
+  useEffect(() => {
+    if (frames.length > 0) {
+      setSelectedFrame(frames[0]);
+    }
+  }, [frames, setSelectedFrame]);
 
   return (
     <div

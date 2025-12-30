@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useEffect, useMemo } from "react";
 import styles from "../styles/index.module.css";
 
+
 export default function FrameSearchScreen({ frame }: { frame: Frame | null }) {
 
   const imageUrl = useMemo(() => {

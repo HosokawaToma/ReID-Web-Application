@@ -3,7 +3,11 @@ import { ApiV1FrameSearch } from "@/lib/api/v1/frameSearch";
 import { Frame } from "@/types/frames";
 import { useCallback, useRef, useState } from "react";
 
-export const useFrameSearch = (token: string | null) => {
+export interface FrameSearchProps {
+  token: string | null;
+}
+
+export const useFrameSearch = ({ token }: FrameSearchProps) => {
   const [ids, setIds] = useState<string[] | null>(null);
   const [cameraIds, setCameraIds] = useState<number[] | null>(null);
   const [viewIds, setViewIds] = useState<number[] | null>(null);
