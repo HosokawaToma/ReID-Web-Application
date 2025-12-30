@@ -19,10 +19,16 @@ export default function FrameSearchScreen({ frame }: { frame: Frame | null }) {
 
   return (
     <div className={styles.defaultFullImageContainer}>
-        <div className={styles.defaultFullImageBackground}>
-        {imageUrl && <Image src={imageUrl} alt="Frame" fill style={{ objectFit: "contain" }} />}
-        {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
-      </div>
+      {imageUrl && <Image src={imageUrl} alt="Frame" fill style={{ objectFit: "contain" }} />}
+      {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
+      {frame && (
+        <div className={styles.defaultImageLabelsContainer}>
+          <label className={styles.defaultImageLabel}>Frame ID: {frame.id}</label>
+          <label className={styles.defaultImageLabel}>Camera ID: {frame.cameraId}</label>
+          <label className={styles.defaultImageLabel}>View ID: {frame.viewId}</label>
+          <label className={styles.defaultImageLabel}>Timestamp: {frame.timestamp.toLocaleString()}</label>
+        </div>
+      )}
     </div>
   );
 }
