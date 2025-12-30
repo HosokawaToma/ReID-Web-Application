@@ -3,12 +3,13 @@ import Image from "next/image";
 import { useEffect, useMemo } from "react";
 import styles from "../styles/index.module.css";
 
-export default function FrameSearchScreen({ frame }: { frame: Frame }) {
+export default function FrameSearchScreen({ frame }: { frame: Frame | null }) {
 
   const imageUrl = useMemo(() => {
+    if (!frame) return null;
     if (!frame.imageBlob) return null;
     return URL.createObjectURL(frame.imageBlob);
-  }, [frame.imageBlob]);
+  }, [frame]);
 
   useEffect(() => {
     return () => {
@@ -20,7 +21,7 @@ export default function FrameSearchScreen({ frame }: { frame: Frame }) {
     <div className={styles.defaultFullImageContainer}>
         <div className={styles.defaultFullImageBackground}>
         {imageUrl && <Image src={imageUrl} alt="Frame" fill style={{ objectFit: "contain" }} />}
-        {!imageUrl && <div>Loading...</div>}
+        {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
       </div>
     </div>
   );

@@ -65,7 +65,7 @@ export default function FrameSearchForm({
     setSortOrderByTimestamp("desc");
   };
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className={styles.defaultForm}>
       <div className={styles.defaultFormContainer}>
         <div className={styles.threeColumnGrid}>
           <div>

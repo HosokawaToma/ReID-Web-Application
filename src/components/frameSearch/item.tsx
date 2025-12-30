@@ -25,7 +25,7 @@ export default function FrameSearchItem({ frame, onFrameClickAction }: FrameSear
       <div className={styles.defaultImageContainer} onClick={() => onFrameClickAction?.(frame)}>
         <div className={styles.defaultImageBackground} onClick={() => onFrameClickAction?.(frame)}>
           {imageUrl && <Image src={imageUrl} alt="Frame" fill style={{ objectFit: "contain" }} />}
-          {!imageUrl && <div>Loading...</div>}
+          {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
         </div>
       </div>
       <div className={styles.cardMetaDataContainer}>

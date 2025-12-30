@@ -2,14 +2,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  overflow: auto;
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
+  min-height: 0;
+  gap: var(--spacing-medium);
+  overflow: auto;
   background: var(--default-background-color-secondary);
   border: 1px solid var(--default-border-color);
-  border-radius: 12px;
+  border-radius: var(--border-radius-medium);
   box-shadow: 0 2px 8px var(--default-shadow-color);
-  padding: 24px;
+  padding: var(--spacing-medium);
+  box-sizing: border-box;
 }
