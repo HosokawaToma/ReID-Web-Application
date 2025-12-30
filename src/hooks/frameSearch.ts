@@ -26,10 +26,7 @@ export const useFrameSearch = (token: string | null) => {
         timestamp_after: afterTimestamp?.toISOString() ?? null,
         timestamp_before: beforeTimestamp?.toISOString() ?? null,
       },
-      ordering: {
-        timestamp_asc: sortOrderByTimestamp === "asc",
-        timestamp_desc: sortOrderByTimestamp === "desc",
-      },
+      ordering: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
     });
 
     const baseFrames: Frame[] = response.frames.map((frame) => ({

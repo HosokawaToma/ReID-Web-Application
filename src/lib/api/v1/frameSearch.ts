@@ -17,10 +17,7 @@ export interface FrameSearchRequest {
     timestamp_after: string | null;
     timestamp_before: string | null;
   };
-  ordering: {
-    timestamp_asc: boolean | null;
-    timestamp_desc: boolean | null;
-  };
+  ordering: ("timestamp_asc" | "timestamp_desc")[];
 }
 
 export const ApiV1FrameSearch = async (
