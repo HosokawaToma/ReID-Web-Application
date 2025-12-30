@@ -1,8 +1,8 @@
 export interface FrameSearchResponse {
-  frames: Frame[];
+  frames: FrameSearchResponseItem[];
 }
 
-export interface Frame {
+export interface FrameSearchResponseItem {
   id: string;
   camera_id: number;
   view_id: number;
