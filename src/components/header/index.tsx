@@ -15,6 +15,9 @@ export default function Header() {
           <Link href="/personFlowWeight" className={styles.headerNavigationLink}>
             <div className={styles.headerNavigationItem}>Person Flow Weight</div>
           </Link>
+          <Link href="/frameSearch" className={styles.headerNavigationLink}>
+            <div className={styles.headerNavigationItem}>Frame Search</div>
+          </Link>
         </div>
       </div>
     </header>
