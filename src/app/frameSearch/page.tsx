@@ -4,6 +4,7 @@ import FrameSearchForm from "@/components/frameSearch/form";
 import FrameSearchList from "@/components/frameSearch/list";
 import FrameSearchScreen from "@/components/frameSearch/screen";
 import { useFrameSearch } from "@/hooks/frameSearch";
+import useFrameSelect from "@/hooks/frameSelect";
 import { useEffect } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
@@ -26,6 +27,7 @@ export default function FrameSearch() {
     setSortOrderByTimestamp,
     searchFrames,
   } = useFrameSearch(token);
+  const { selectedFrame, setSelectedFrame } = useFrameSelect();
 
   useEffect(() => {
     searchFrames();
@@ -67,8 +69,8 @@ export default function FrameSearch() {
           gap: "10px",
           boxSizing: "border-box"
         }}>
-        <FrameSearchScreen frame={frames.length > 0 ? frames[0] : null} />
-        <FrameSearchList frames={frames} onFrameClickAction={null} />
+        <FrameSearchScreen frame={selectedFrame} />
+        <FrameSearchList frames={frames} onFrameClickAction={setSelectedFrame} />
       </div>
     </div>
   );
