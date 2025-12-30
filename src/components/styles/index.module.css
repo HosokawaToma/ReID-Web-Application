@@ -33,11 +33,17 @@
 
   --spacing-small: 0.5vw;
   --spacing-medium: 1vw;
+  --spacing-large: 1.5vw;
+
+  --border-radius-small: 0.5vw;
+  --border-radius-medium: 1vw;
+  --border-radius-large: 1.5vw;
 }
 
 @import "./button.module.css";
 @import "./card.module.css";
 @import "./from.module.css";
+@import "./grid.module.css";
 @import "./image.module.css";
 @import "./input.module.css";
 @import "./list.module.css";

@@ -65,40 +65,42 @@ export default function FrameSearchForm({
     setSortOrderByTimestamp("desc");
   };
   return (
-    <div className={styles.defaultFormContainer}>
-      <form onSubmit={handleSubmit} className={styles.defaultForm}>
-        <div>
-          <label htmlFor="id">ID</label>
-          <input type="text" id="id" name="id" value={ids?.join(",") ?? ""} onChange={handleIdsChange}/>
+    <form onSubmit={handleSubmit}>
+      <div className={styles.defaultFormContainer}>
+        <div className={styles.threeColumnGrid}>
+          <div>
+            <label htmlFor="id">ID</label>
+            <input type="text" id="id" name="id" className={styles.defaultInput} value={ids?.join(",") ?? ""} onChange={handleIdsChange}/>
+          </div>
+          <div>
+            <label htmlFor="cameraId">Camera ID</label>
+            <input type="text" id="cameraId" name="cameraId" className={styles.defaultInput} value={cameraIds?.join(",") ?? ""} onChange={handleCameraIdsChange}/>
+          </div>
+          <div>
+            <label htmlFor="viewId">View ID</label>
+            <input type="text" id="viewId" name="viewId" className={styles.defaultInput} value={viewIds?.join(",") ?? ""} onChange={handleViewIdsChange}/>
+          </div>
+          <div>
+            <label htmlFor="afterTimestamp">After Timestamp</label>
+            <input type="datetime-local" id="afterTimestamp" name="afterTimestamp" className={styles.defaultInput} value={afterTimestamp ? toDateInputString(afterTimestamp) : ""} onChange={handleAfterTimestampChange}/>
+          </div>
+          <div>
+            <label htmlFor="beforeTimestamp">Before Timestamp</label>
+            <input type="datetime-local" id="beforeTimestamp" name="beforeTimestamp" className={styles.defaultInput} value={beforeTimestamp ? toDateInputString(beforeTimestamp) : ""} onChange={handleBeforeTimestampChange}/>
+          </div>
+          <div>
+            <label htmlFor="sortOrderByTimestamp">Sort Order By Timestamp</label>
+            <select id="sortOrderByTimestamp" name="sortOrderByTimestamp" className={styles.defaultInput} value={sortOrderByTimestamp} onChange={handleSortOrderByTimestampChange}>
+              <option value="asc">Asc</option>
+              <option value="desc">Desc</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label htmlFor="cameraId">Camera ID</label>
-          <input type="text" id="cameraId" name="cameraId" value={cameraIds?.join(",") ?? ""} onChange={handleCameraIdsChange}/>
+        <div className={styles.twoColumnGrid}>
+          <button type="submit" className={styles.primaryButton}>Search</button>
+          <button type="button" onClick={handleReset} className={styles.defaultButton}>Reset</button>
         </div>
-        <div>
-          <label htmlFor="viewId">View ID</label>
-          <input type="text" id="viewId" name="viewId" value={viewIds?.join(",") ?? ""} onChange={handleViewIdsChange}/>
-        </div>
-        <div>
-          <label htmlFor="afterTimestamp">After Timestamp</label>
-          <input type="datetime-local" id="afterTimestamp" name="afterTimestamp" value={afterTimestamp ? toDateInputString(afterTimestamp) : ""} onChange={handleAfterTimestampChange}/>
-        </div>
-        <div>
-          <label htmlFor="beforeTimestamp">Before Timestamp</label>
-          <input type="datetime-local" id="beforeTimestamp" name="beforeTimestamp" value={beforeTimestamp ? toDateInputString(beforeTimestamp) : ""} onChange={handleBeforeTimestampChange}/>
-        </div>
-        <div>
-          <label htmlFor="sortOrderByTimestamp">Sort Order By Timestamp</label>
-          <select id="sortOrderByTimestamp" name="sortOrderByTimestamp" value={sortOrderByTimestamp} onChange={handleSortOrderByTimestampChange}>
-            <option value="asc">Asc</option>
-            <option value="desc">Desc</option>
-          </select>
-        </div>
-        <div>
-          <button type="submit">Search</button>
-          <button type="button" onClick={handleReset}>Reset</button>
-        </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }
