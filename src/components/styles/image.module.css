@@ -1,14 +1,14 @@
 .defaultImageContainer {
-  width: 240px;
-  height: 240px;
+  width: 7.5vw;
+  height: 7.5vw;
   position: relative;
   flex-shrink: 0;
   border-radius: 0.5rem;
 }
 
 .defaultImageBackground {
-  width: 240px;
-  height: 240px;
+  width: 7.5vw;
+  height: 7.5vw;
   border-radius: 0.5rem;
   background-color: var(--default-background-color-secondary);
 }
