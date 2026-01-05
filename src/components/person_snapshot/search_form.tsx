@@ -229,6 +229,7 @@ export default function PersonSnapshotSearchForm({
           <input
             id="afterTime"
             type="time"
+            step="1"
             value={afterTimestamp ? toTimeInputString(afterTimestamp) : ""}
             onChange={handleAfterTimeChange}
             className={`${styles.defaultInput} ${styles.fullWidthInput}`}
@@ -242,6 +243,7 @@ export default function PersonSnapshotSearchForm({
           <input
             id="beforeTime"
             type="time"
+            step="1"
             value={beforeTimestamp ? toTimeInputString(beforeTimestamp) : ""}
             onChange={handleBeforeTimeChange}
             className={`${styles.defaultInput} ${styles.fullWidthInput}`}
