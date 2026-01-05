@@ -1,5 +1,6 @@
 import { ApiV1PersonSnapshotImageSearch } from "@/lib/api/v1/personSnapshotImageSearch";
 import { ApiV1PersonSnapshotSearch } from "@/lib/api/v1/personSnapshotSearch";
+import { timestampToString } from "@/lib/util/date";
 import { PersonSnapshot } from "@/types/personSnapshots";
 import { useCallback, useRef, useState } from "react";
 
@@ -30,8 +31,8 @@ export const usePersonSnapshotSearch = (token: string | null) => {
         view_ids: viewIds,
         person_ids: personIds,
         is_junk: isJunk,
-        timestamp_after: afterTimestamp?.toISOString() ?? null,
-        timestamp_before: beforeTimestamp?.toISOString() ?? null,
+        timestamp_after: afterTimestamp ? timestampToString(afterTimestamp) : null,
+        timestamp_before: beforeTimestamp ? timestampToString(beforeTimestamp) : null,
       },
       ordering: {
         timestamp_asc: sortOrderByTimestamp === "asc",

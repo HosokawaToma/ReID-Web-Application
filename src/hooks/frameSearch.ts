@@ -1,5 +1,6 @@
 import { ApiV1FrameImageSearch } from "@/lib/api/v1/frameImageSearch";
 import { ApiV1FrameSearch } from "@/lib/api/v1/frameSearch";
+import { timestampToString } from "@/lib/util/date";
 import { Frame } from "@/types/frames";
 import { useCallback, useRef, useState } from "react";
 
@@ -27,8 +28,8 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
         ids: ids,
         camera_ids: cameraIds,
         view_ids: viewIds,
-        timestamp_after: afterTimestamp?.toISOString() ?? null,
-        timestamp_before: beforeTimestamp?.toISOString() ?? null,
+        timestamp_after: afterTimestamp ? timestampToString(afterTimestamp) : null,
+        timestamp_before: beforeTimestamp ? timestampToString(beforeTimestamp) : null,
       },
       ordering: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
     });
@@ -49,23 +50,13 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
         try {
           const imageBlob = await ApiV1FrameImageSearch(token, frame.id);
           if (searchId !== activeSearchIdRef.current) return;
-          setFrames((prev) =>
-            prev.map((f) => (f.id === frame.id ? { ...f, imageBlob } : f))
-          );
+          setFrames((prev) => prev.map((f) => (f.id === frame.id ? { ...f, imageBlob } : f)));
         } catch {
           // 画像取得失敗時はそのままにしておく
         }
       })
     );
-  }, [
-    ids,
-    afterTimestamp,
-    beforeTimestamp,
-    cameraIds,
-    viewIds,
-    sortOrderByTimestamp,
-    token,
-  ]);
+  }, [ids, afterTimestamp, beforeTimestamp, cameraIds, viewIds, sortOrderByTimestamp, token]);
   return {
     ids,
     cameraIds,

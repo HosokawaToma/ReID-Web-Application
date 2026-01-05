@@ -1,6 +1,6 @@
 "use client";
 
-import { toDateInputString } from "@/lib/util/date";
+import { toDateInputString, toDateTime, toTimeInputString } from "@/lib/util/date";
 import styles from "../styles/index.module.css";
 
 export interface FrameSearchFormProps {
@@ -43,14 +43,31 @@ export default function FrameSearchForm({
   const handleViewIdsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setViewIds(e.target.value.split(",").map(Number));
   };
-  const handleAfterTimestampChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAfterTimestamp(new Date(e.target.value));
-  };
-  const handleBeforeTimestampChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBeforeTimestamp(new Date(e.target.value));
-  };
   const handleSortOrderByTimestampChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOrderByTimestamp(e.target.value as "asc" | "desc");
+  };
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === "") {
+      setAfterTimestamp(null);
+      setBeforeTimestamp(null);
+      return;
+    }
+    const afterTime = afterTimestamp ? toTimeInputString(afterTimestamp) : "00:00:00";
+    const beforeTime = beforeTimestamp ? toTimeInputString(beforeTimestamp) : "23:59:59";
+    setAfterTimestamp(toDateTime(e.target.value, afterTime));
+    setBeforeTimestamp(toDateTime(e.target.value, beforeTime));
+  };
+  const handleAfterTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = afterTimestamp ? toDateInputString(afterTimestamp) : toDateInputString(new Date());
+    const beforeTime = beforeTimestamp ? toTimeInputString(beforeTimestamp) : "23:59:59";
+    setAfterTimestamp(toDateTime(date, e.target.value));
+    setBeforeTimestamp(toDateTime(date, beforeTime));
+  };
+  const handleBeforeTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = beforeTimestamp ? toDateInputString(beforeTimestamp) : toDateInputString(new Date());
+    const afterTime = afterTimestamp ? toTimeInputString(afterTimestamp) : "00:00:00";
+    setBeforeTimestamp(toDateTime(date, e.target.value));
+    setAfterTimestamp(toDateTime(date, afterTime));
   };
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,20 +98,24 @@ export default function FrameSearchForm({
             <input type="text" id="viewId" name="viewId" className={styles.defaultInput} value={viewIds?.join(",") ?? ""} onChange={handleViewIdsChange}/>
           </div>
           <div>
-            <label htmlFor="afterTimestamp">After Timestamp</label>
-            <input type="datetime-local" id="afterTimestamp" name="afterTimestamp" className={styles.defaultInput} value={afterTimestamp ? toDateInputString(afterTimestamp) : ""} onChange={handleAfterTimestampChange}/>
+            <label htmlFor="Date">Date</label>
+            <input type="date" id="date" name="date" className={styles.defaultInput} value={afterTimestamp ? toDateInputString(afterTimestamp) : ""} onChange={handleDateChange}/>
           </div>
           <div>
-            <label htmlFor="beforeTimestamp">Before Timestamp</label>
-            <input type="datetime-local" id="beforeTimestamp" name="beforeTimestamp" className={styles.defaultInput} value={beforeTimestamp ? toDateInputString(beforeTimestamp) : ""} onChange={handleBeforeTimestampChange}/>
+            <label htmlFor="afterTime">After Time</label>
+            <input type="time" id="afterTime" name="afterTime" className={styles.defaultInput} value={afterTimestamp ? toTimeInputString(afterTimestamp) : ""} onChange={handleAfterTimeChange}/>
+          </div>
+          <div>
+            <label htmlFor="beforeTime">Before Time</label>
+            <input type="time" id="beforeTime" name="beforeTime" className={styles.defaultInput} value={beforeTimestamp ? toTimeInputString(beforeTimestamp) : ""} onChange={handleBeforeTimeChange}/>
           </div>
           <div>
             <label htmlFor="sortOrderByTimestamp">Sort Order By Timestamp</label>
             <select id="sortOrderByTimestamp" name="sortOrderByTimestamp" className={styles.defaultInput} value={sortOrderByTimestamp} onChange={handleSortOrderByTimestampChange}>
-              <option value="asc">Asc</option>
-              <option value="desc">Desc</option>
-            </select>
-          </div>
+            <option value="desc">新しい順 (降順)</option>
+            <option value="asc">古い順 (昇順)</option>
+          </select>
+        </div>
         </div>
         <div className={styles.twoColumnGrid}>
           <button type="submit" className={styles.primaryButton}>Search</button>
