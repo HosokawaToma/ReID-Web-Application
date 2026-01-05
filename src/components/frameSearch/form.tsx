@@ -103,11 +103,11 @@ export default function FrameSearchForm({
           </div>
           <div>
             <label htmlFor="afterTime">After Time</label>
-            <input type="time" id="afterTime" name="afterTime" className={styles.defaultInput} value={afterTimestamp ? toTimeInputString(afterTimestamp) : ""} onChange={handleAfterTimeChange}/>
+            <input type="time" id="afterTime" name="afterTime" step="1" className={styles.defaultInput} value={afterTimestamp ? toTimeInputString(afterTimestamp) : ""} onChange={handleAfterTimeChange}/>
           </div>
           <div>
             <label htmlFor="beforeTime">Before Time</label>
-            <input type="time" id="beforeTime" name="beforeTime" className={styles.defaultInput} value={beforeTimestamp ? toTimeInputString(beforeTimestamp) : ""} onChange={handleBeforeTimeChange}/>
+            <input type="time" id="beforeTime" name="beforeTime" step="1" className={styles.defaultInput} value={beforeTimestamp ? toTimeInputString(beforeTimestamp) : ""} onChange={handleBeforeTimeChange}/>
           </div>
           <div>
             <label htmlFor="sortOrderByTimestamp">Sort Order By Timestamp</label>
