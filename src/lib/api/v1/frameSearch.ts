@@ -24,6 +24,7 @@ export const ApiV1FrameSearch = async (
   token: string | null,
   request: FrameSearchRequest | null = null
 ): Promise<FrameSearchResponse> => {
+  console.log(request);
   return await fetch(
     new Request(
       new URL("/api/v1/frame/search", process.env.NEXT_PUBLIC_API_URL as string),
