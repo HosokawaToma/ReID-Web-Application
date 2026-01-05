@@ -8,7 +8,8 @@ export const toDateInputString = (date: Date): string => {
 export const toTimeInputString = (date: Date): string => {
   const h = String(date.getHours()).padStart(2, "0");
   const min = String(date.getMinutes()).padStart(2, "0");
-  return `${h}:${min}`;
+  const s = String(date.getSeconds()).padStart(2, "0");
+  return `${h}:${min}:${s}`;
 };
 
 export const toDateTime = (dateStr: string, timeStr: string): Date => {
