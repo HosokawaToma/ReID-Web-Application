@@ -6,7 +6,7 @@
   box-shadow: 0 1px 2px 0 var(--default-shadow-color);
   transition: box-shadow 0.3s, transform 0.3s;
   border-radius: 1rem;
-  padding: 1rem;
+  padding: 0.5rem;
   box-sizing: border-box;
   width: 100%;
 }
@@ -35,27 +35,33 @@
 }
 
 .cardMetaDataContainer {
-  padding: 0 1rem;
+  padding: 0 var(--spacing-medium);
   display: flex;
   flex-direction: column;
 }
 
 .cardMainMetaDataText {
-  font-size: var(--font-size-medium);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-default);
+  font-weight: var(--font-weight-default);
   color: var(--default-text-color);
+  margin: var(--spacing-small) 0;
 }
 
 .cardMainMetaDataValueText {
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-default);
+  font-weight: var(--font-weight-default);
   color: var(--default-text-color);
+  margin: 0 0 var(--spacing-small) 0;
 }
 
 .cardMetaDataText {
-  font-size: var(--font-size-default);
+  font-size: var(--font-size-small);
   color: var(--default-secondary-text-color);
+  margin: 0 0 var(--spacing-small) 0;
 }
 
 .cardMetaDataValueText {
+  font-size: var(--font-size-small);
   color: var(--default-secondary-text-color);
+  margin: 0 0 var(--spacing-small) 0;
 }

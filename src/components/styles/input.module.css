@@ -1,8 +1,8 @@
 .defaultInput {
   font-size: var(--font-size-default);
-  padding: 12px;
+  padding: var(--spacing-small);
   border: 1px solid var(--default-border-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius-small);
   outline: none;
   transition: border-color 0.3s, box-shadow 0.3s;
   box-shadow: 0 2px 4px var(--default-shadow-color);

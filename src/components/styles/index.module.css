@@ -25,16 +25,27 @@
   --error-border-color: #ddd;
   --error-text-color: #ffffff;
 
-  --font-size-medium: 1.5rem;
-  --font-size-default: 1rem;
-  --font-size-small: 0.5rem;
+  --font-size-medium: 1.5vw;
+  --font-size-default: 1vw;
+  --font-size-small: 0.5vw;
 
-  --font-weight-medium: 700;
+  --font-weight-small: 400;
+  --font-weight-default: 600;
+  --font-weight-medium: 800;
+
+  --spacing-small: 0.5vw;
+  --spacing-medium: 1vw;
+  --spacing-large: 1.5vw;
+
+  --border-radius-small: 0.5vw;
+  --border-radius-medium: 1vw;
+  --border-radius-large: 1.5vw;
 }
 
 @import "./button.module.css";
 @import "./card.module.css";
 @import "./from.module.css";
+@import "./grid.module.css";
 @import "./image.module.css";
 @import "./input.module.css";
 @import "./list.module.css";

@@ -1,14 +1,15 @@
 .defaultButton {
   font-size: var(--font-size-default);
-  font-weight: 600;
+  font-weight: var(--font-weight-default);
   color: var(--default-text-color);
   background-color: var(--default-background-color);
   border: 1px solid var(--default-border-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
   box-shadow: 0 4px 8px var(--default-shadow-color);
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-small) var(--spacing-medium);
+  width: 100%;
 }
 
 .defaultButton:hover {
@@ -26,11 +27,12 @@
   background-color: var(--primary-color);
   color: var(--primary-text-color);
   border: 1px solid var(--primary-border-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
   box-shadow: 0 4px 8px var(--primary-shadow-color);
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-small) var(--spacing-medium);
+  width: 100%;
 }
 
 .primaryButton:hover {
