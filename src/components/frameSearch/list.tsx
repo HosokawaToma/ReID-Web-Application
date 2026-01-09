@@ -14,7 +14,7 @@ export default function FrameSearchList({
   searchFrameImage,
   onItemClickAction,
 }: FrameSearchListProps) {
-  const MAX_ITEMS = 1;
+  const MAX_ITEMS = 30;
   const [displayCount, setDisplayCount] = useState(MAX_ITEMS);
 
   const visibleFrameMetaDatas = frameMetaDatas.slice(0, displayCount);
