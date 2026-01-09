@@ -1,7 +1,6 @@
-export interface Frame {
+export interface FrameMetaData {
   id: string;
   cameraId: number;
   viewId: number;
   timestamp: Date;
-  imageBlob: Blob | null;
 }

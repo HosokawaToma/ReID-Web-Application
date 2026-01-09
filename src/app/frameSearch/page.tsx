@@ -4,14 +4,13 @@ import FrameSearchForm from "@/components/frameSearch/form";
 import FrameSearchList from "@/components/frameSearch/list";
 import FrameSearchScreen from "@/components/frameSearch/screen";
 import { useFrameSearch } from "@/hooks/frameSearch";
-import useFrameSelect from "@/hooks/frameSelect";
+import { useFrameSelect } from "@/hooks/frameSelect";
 import { useEffect } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 
 export default function FrameSearch() {
   const { token } = useTokenContext();
-  const { selectedFrame, setSelectedFrame } = useFrameSelect();
   const {
     ids,
     cameraIds,
@@ -20,6 +19,7 @@ export default function FrameSearch() {
     beforeTimestamp,
     sortOrderByTimestamp,
     frames,
+    frameImages,
     setIds,
     setCameraIds,
     setViewIds,
@@ -27,7 +27,9 @@ export default function FrameSearch() {
     setBeforeTimestamp,
     setSortOrderByTimestamp,
     searchFrames,
+    searchFrameImage,
   } = useFrameSearch({ token });
+  const { selectedFrameMetaData, selectedFrameImage, selectFrameById } = useFrameSelect({ frameMetaDatas: frames, frameImages: frameImages });
 
   useEffect(() => {
     searchFrames();
@@ -35,9 +37,9 @@ export default function FrameSearch() {
 
   useEffect(() => {
     if (frames.length > 0) {
-      setSelectedFrame(frames[0]);
+      selectFrameById(frames[0].id);
     }
-  }, [frames, setSelectedFrame]);
+  }, [frames, selectFrameById]);
 
   return (
     <div
@@ -75,8 +77,8 @@ export default function FrameSearch() {
           gap: "10px",
           boxSizing: "border-box"
         }}>
-        <FrameSearchScreen frame={selectedFrame} />
-        <FrameSearchList frames={frames} onFrameClickAction={setSelectedFrame} />
+        <FrameSearchScreen frameMetadata={selectedFrameMetaData} frameImage={selectedFrameImage} />
+        <FrameSearchList frameMetaDatas={frames} searchFrameImage={searchFrameImage} onItemClickAction={selectFrameById} />
       </div>
     </div>
   );

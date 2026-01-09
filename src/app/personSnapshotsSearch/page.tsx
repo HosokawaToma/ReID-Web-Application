@@ -25,6 +25,7 @@ export default function PersonSnapshotsSearch() {
     setBeforeTimestamp,
     setSortOrderByTimestamp,
     searchPersonSnapshots,
+    searchPersonSnapshotImage,
     addPersonId,
   } = usePersonSnapshotSearch(token);
 
@@ -54,7 +55,7 @@ export default function PersonSnapshotsSearch() {
       viewIdsOption={[]}
       onSubmitAction={searchPersonSnapshots}
     />
-    <PersonSnapshotList personSnapshots={personSnapshots} onPersonIdClickAction={addPersonId} />
+    <PersonSnapshotList personSnapshots={personSnapshots} searchPersonSnapshotImage={searchPersonSnapshotImage} onClickAction={addPersonId} />
   </div>
   );
 }

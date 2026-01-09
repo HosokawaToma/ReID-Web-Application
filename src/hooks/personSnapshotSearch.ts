@@ -1,7 +1,7 @@
 import { ApiV1PersonSnapshotImageSearch } from "@/lib/api/v1/personSnapshotImageSearch";
 import { ApiV1PersonSnapshotSearch } from "@/lib/api/v1/personSnapshotSearch";
 import { timestampToString } from "@/lib/util/date";
-import { PersonSnapshot } from "@/types/personSnapshots";
+import { PersonSnapshotMetaData } from "@/types/personSnapshots";
 import { useCallback, useRef, useState } from "react";
 
 export const usePersonSnapshotSearch = (token: string | null) => {
@@ -13,8 +13,9 @@ export const usePersonSnapshotSearch = (token: string | null) => {
   const [beforeTimestamp, setBeforeTimestamp] = useState<Date | null>(null);
   const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("desc");
 
-  const [personSnapshots, setPersonSnapshots] = useState<PersonSnapshot[]>([]);
-  const activeSearchIdRef = useRef(0);
+  const [personSnapshots, setPersonSnapshots] = useState<PersonSnapshotMetaData[]>([]);
+  const [personSnapshotImages, setPersonSnapshotImages] = useState<Record<string, Blob | null>>({});
+  const personSnapshotImagesRef = useRef<Record<string, Blob | null>>({});
 
   const addPersonId = (personId: string) => {
     setPersonIds([...(personIds ?? []), personId]);
@@ -22,7 +23,6 @@ export const usePersonSnapshotSearch = (token: string | null) => {
 
   const searchPersonSnapshots = useCallback(async () => {
     if (!token) return;
-    const searchId = ++activeSearchIdRef.current;
 
     const response = await ApiV1PersonSnapshotSearch(token, {
       filters: {
@@ -40,32 +40,18 @@ export const usePersonSnapshotSearch = (token: string | null) => {
       },
     });
 
-    const baseSnapshots: PersonSnapshot[] = response.person_snapshots.map((personSnapshot) => ({
-      id: personSnapshot.id,
-      cameraId: personSnapshot.camera_id,
-      viewId: personSnapshot.view_id,
-      timestamp: new Date(personSnapshot.timestamp),
-      isJunk: personSnapshot.is_junk,
-      personId: personSnapshot.person_id,
-      imageBlob: null,
-    }));
-
-    if (searchId !== activeSearchIdRef.current) return;
-    setPersonSnapshots(baseSnapshots);
-
-    await Promise.allSettled(
-      baseSnapshots.map(async (snapshot) => {
-        try {
-          const imageBlob = await ApiV1PersonSnapshotImageSearch(token, snapshot.id);
-          if (searchId !== activeSearchIdRef.current) return;
-          setPersonSnapshots((prev) =>
-            prev.map((p) => (p.id === snapshot.id ? { ...p, imageBlob } : p))
-          );
-        } catch {
-          // 画像取得失敗時はそのままにしておく
-        }
+    const baseSnapshots: PersonSnapshotMetaData[] = response.person_snapshots.map(
+      (personSnapshot) => ({
+        id: personSnapshot.id,
+        cameraId: personSnapshot.camera_id,
+        viewId: personSnapshot.view_id,
+        timestamp: new Date(personSnapshot.timestamp),
+        isJunk: personSnapshot.is_junk,
+        personId: personSnapshot.person_id,
       })
     );
+
+    setPersonSnapshots(baseSnapshots);
   }, [
     afterTimestamp,
     beforeTimestamp,
@@ -76,6 +62,22 @@ export const usePersonSnapshotSearch = (token: string | null) => {
     token,
     viewIds,
   ]);
+
+  const searchPersonSnapshotImage = useCallback(
+    async (personSnapshotId: string) => {
+      if (!token) return null;
+      // useRefで最新のキャッシュを確認（関数が再作成されないようにするため）
+      if (personSnapshotImagesRef.current[personSnapshotId]) {
+        return personSnapshotImagesRef.current[personSnapshotId];
+      }
+      const response = await ApiV1PersonSnapshotImageSearch(token, personSnapshotId);
+      personSnapshotImagesRef.current[personSnapshotId] = response;
+      setPersonSnapshotImages((prev) => ({ ...prev, [personSnapshotId]: response }));
+      return response;
+    },
+    [token]
+  );
+
   return {
     personIds,
     cameraIds,
@@ -85,6 +87,7 @@ export const usePersonSnapshotSearch = (token: string | null) => {
     beforeTimestamp,
     sortOrderByTimestamp,
     personSnapshots,
+    personSnapshotImages,
     setPersonIds,
     setCameraIds,
     setViewIds,
@@ -93,6 +96,7 @@ export const usePersonSnapshotSearch = (token: string | null) => {
     setBeforeTimestamp,
     setSortOrderByTimestamp,
     searchPersonSnapshots,
+    searchPersonSnapshotImage,
     addPersonId,
   };
 };

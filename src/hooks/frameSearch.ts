@@ -1,7 +1,7 @@
 import { ApiV1FrameImageSearch } from "@/lib/api/v1/frameImageSearch";
 import { ApiV1FrameSearch } from "@/lib/api/v1/frameSearch";
 import { timestampToString } from "@/lib/util/date";
-import { Frame } from "@/types/frames";
+import { FrameMetaData } from "@/types/frames";
 import { useCallback, useRef, useState } from "react";
 
 export interface FrameSearchProps {
@@ -16,12 +16,11 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
   const [beforeTimestamp, setBeforeTimestamp] = useState<Date | null>(null);
   const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("desc");
 
-  const [frames, setFrames] = useState<Frame[]>([]);
-  const activeSearchIdRef = useRef(0);
-
+  const [frames, setFrames] = useState<FrameMetaData[]>([]);
+  const [frameImages, setFrameImages] = useState<Record<string, Blob | null>>({});
+  const frameImagesRef = useRef<Record<string, Blob | null>>({});
   const searchFrames = useCallback(async () => {
     if (!token) return;
-    const searchId = ++activeSearchIdRef.current;
 
     const response = await ApiV1FrameSearch(token, {
       filters: {
@@ -34,29 +33,25 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
       ordering: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
     });
 
-    const baseFrames: Frame[] = response.frames.map((frame) => ({
+    const baseFrames: FrameMetaData[] = response.frames.map((frame) => ({
       id: frame.id,
       cameraId: frame.camera_id,
       viewId: frame.view_id,
       timestamp: new Date(frame.timestamp),
-      imageBlob: null,
     }));
 
-    if (searchId !== activeSearchIdRef.current) return;
     setFrames(baseFrames);
-
-    await Promise.allSettled(
-      baseFrames.map(async (frame) => {
-        try {
-          const imageBlob = await ApiV1FrameImageSearch(token, frame.id);
-          if (searchId !== activeSearchIdRef.current) return;
-          setFrames((prev) => prev.map((f) => (f.id === frame.id ? { ...f, imageBlob } : f)));
-        } catch {
-          // 画像取得失敗時はそのままにしておく
-        }
-      })
-    );
   }, [ids, afterTimestamp, beforeTimestamp, cameraIds, viewIds, sortOrderByTimestamp, token]);
+
+  const searchFrameImage = useCallback(async (frameId: string) => {
+    if (!token) return null;
+    if (frameImagesRef.current[frameId]) return frameImagesRef.current[frameId];
+    const response = await ApiV1FrameImageSearch(token, frameId);
+    frameImagesRef.current[frameId] = response;
+    setFrameImages((prev) => ({ ...prev, [frameId]: response }));
+    return response;
+  }, [token]);
+
   return {
     ids,
     cameraIds,
@@ -65,6 +60,7 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
     beforeTimestamp,
     sortOrderByTimestamp,
     frames,
+    frameImages,
     setIds,
     setCameraIds,
     setViewIds,
@@ -72,5 +68,6 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
     setBeforeTimestamp,
     setSortOrderByTimestamp,
     searchFrames,
+    searchFrameImage,
   };
 };
