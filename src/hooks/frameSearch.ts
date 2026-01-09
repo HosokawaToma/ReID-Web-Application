@@ -2,7 +2,7 @@ import { ApiV1FrameImageSearch } from "@/lib/api/v1/frameImageSearch";
 import { ApiV1FrameSearch } from "@/lib/api/v1/frameSearch";
 import { timestampToString } from "@/lib/util/date";
 import { Frame } from "@/types/frames";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 export interface FrameSearchProps {
   token: string | null;
@@ -17,11 +17,9 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
   const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("desc");
 
   const [frames, setFrames] = useState<Frame[]>([]);
-  const activeSearchIdRef = useRef(0);
 
   const searchFrames = useCallback(async () => {
     if (!token) return;
-    const searchId = ++activeSearchIdRef.current;
 
     const response = await ApiV1FrameSearch(token, {
       filters: {
@@ -42,21 +40,15 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
       imageBlob: null,
     }));
 
-    if (searchId !== activeSearchIdRef.current) return;
     setFrames(baseFrames);
-
-    await Promise.allSettled(
-      baseFrames.map(async (frame) => {
-        try {
-          const imageBlob = await ApiV1FrameImageSearch(token, frame.id);
-          if (searchId !== activeSearchIdRef.current) return;
-          setFrames((prev) => prev.map((f) => (f.id === frame.id ? { ...f, imageBlob } : f)));
-        } catch {
-          // 画像取得失敗時はそのままにしておく
-        }
-      })
-    );
   }, [ids, afterTimestamp, beforeTimestamp, cameraIds, viewIds, sortOrderByTimestamp, token]);
+
+  const searchFrameImage = useCallback(async (frameId: string) => {
+    if (!token) return null;
+    const response = await ApiV1FrameImageSearch(token, frameId);
+    setFrames((prev) => prev.map((frame) => (frame.id === frameId ? { ...frame, imageBlob: response } : frame)));
+  }, [token]);
+
   return {
     ids,
     cameraIds,
@@ -72,5 +64,6 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
     setBeforeTimestamp,
     setSortOrderByTimestamp,
     searchFrames,
+    searchFrameImage,
   };
 };
