@@ -29,7 +29,7 @@ export default function PersonSnapshotItem({
     <div className={isJunk ? styles.errorCard : styles.defaultCard}>
       <div className={isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
         <div className={isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
-          { isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
+          {isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
           {imageUrl && (
             <Image
               src={imageUrl}
@@ -45,7 +45,9 @@ export default function PersonSnapshotItem({
         <p className={styles.cardMainMetaDataText}>Person ID: {personSnapshot.personId}</p>
         <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
         <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
-        <p className={styles.cardMetaDataText}>Timestamp: {personSnapshot.timestamp.toLocaleString()}</p>
+        <p className={styles.cardMetaDataText}>
+          Timestamp: {personSnapshot.timestamp.toLocaleString()}
+        </p>
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
-import { ApiV1PersonSnapshotSearch } from "@/lib/api/v1/personSnapshotSearch";
 import { ApiV1PersonSnapshotImageSearch } from "@/lib/api/v1/personSnapshotImageSearch";
+import { ApiV1PersonSnapshotSearch } from "@/lib/api/v1/personSnapshotSearch";
 import { timestampToString } from "@/lib/util/date";
 import { PersonSnapshotMetaData } from "@/types/personSnapshots";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export const usePersonSnapshotSearch = (token: string | null) => {
   const [personIds, setPersonIds] = useState<string[] | null>(null);
@@ -15,6 +15,7 @@ export const usePersonSnapshotSearch = (token: string | null) => {
 
   const [personSnapshots, setPersonSnapshots] = useState<PersonSnapshotMetaData[]>([]);
   const [personSnapshotImages, setPersonSnapshotImages] = useState<Record<string, Blob | null>>({});
+  const personSnapshotImagesRef = useRef<Record<string, Blob | null>>({});
 
   const addPersonId = (personId: string) => {
     setPersonIds([...(personIds ?? []), personId]);
@@ -39,14 +40,16 @@ export const usePersonSnapshotSearch = (token: string | null) => {
       },
     });
 
-    const baseSnapshots: PersonSnapshotMetaData[] = response.person_snapshots.map((personSnapshot) => ({
-      id: personSnapshot.id,
-      cameraId: personSnapshot.camera_id,
-      viewId: personSnapshot.view_id,
-      timestamp: new Date(personSnapshot.timestamp),
-      isJunk: personSnapshot.is_junk,
-      personId: personSnapshot.person_id,
-    }));
+    const baseSnapshots: PersonSnapshotMetaData[] = response.person_snapshots.map(
+      (personSnapshot) => ({
+        id: personSnapshot.id,
+        cameraId: personSnapshot.camera_id,
+        viewId: personSnapshot.view_id,
+        timestamp: new Date(personSnapshot.timestamp),
+        isJunk: personSnapshot.is_junk,
+        personId: personSnapshot.person_id,
+      })
+    );
 
     setPersonSnapshots(baseSnapshots);
   }, [
@@ -60,13 +63,20 @@ export const usePersonSnapshotSearch = (token: string | null) => {
     viewIds,
   ]);
 
-  const searchPersonSnapshotImage = useCallback(async (personSnapshotId: string) => {
-    if (!token) return null;
-    if (personSnapshotImages[personSnapshotId]) return personSnapshotImages[personSnapshotId];
-    const response = await ApiV1PersonSnapshotImageSearch(token, personSnapshotId);
-    setPersonSnapshotImages((prev) => ({ ...prev, [personSnapshotId]: response }));
-    return response;
-  }, [token, personSnapshotImages]);
+  const searchPersonSnapshotImage = useCallback(
+    async (personSnapshotId: string) => {
+      if (!token) return null;
+      // useRefで最新のキャッシュを確認（関数が再作成されないようにするため）
+      if (personSnapshotImagesRef.current[personSnapshotId]) {
+        return personSnapshotImagesRef.current[personSnapshotId];
+      }
+      const response = await ApiV1PersonSnapshotImageSearch(token, personSnapshotId);
+      personSnapshotImagesRef.current[personSnapshotId] = response;
+      setPersonSnapshotImages((prev) => ({ ...prev, [personSnapshotId]: response }));
+      return response;
+    },
+    [token]
+  );
 
   return {
     personIds,

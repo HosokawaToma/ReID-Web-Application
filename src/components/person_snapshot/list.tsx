@@ -1,6 +1,7 @@
 "use client";
 
 import { PersonSnapshotMetaData } from "@/types/personSnapshots";
+import { useEffect, useState } from "react";
 import styles from "../styles/index.module.css";
 import PersonSnapshotItem from "./item";
 
@@ -11,9 +12,17 @@ export interface PersonSnapshotListProps {
 }
 
 export default function PersonSnapshotList({ personSnapshots, searchPersonSnapshotImage, onClickAction }: PersonSnapshotListProps) {
+  const MAX_ITEMS = 30;
+  const [displayCount, setDisplayCount] = useState(MAX_ITEMS);
+  const [visiblePersonSnapshots, setVisiblePersonSnapshots] = useState<PersonSnapshotMetaData[]>([]);
+
+  useEffect(() => {
+    setVisiblePersonSnapshots(personSnapshots.slice(0, displayCount));
+  }, [personSnapshots, displayCount]);
+
   return (
     <div className={styles.listContainer}>
-      {personSnapshots.map((personSnapshot) => (
+      {visiblePersonSnapshots.map((personSnapshot) => (
         <PersonSnapshotItem
           key={personSnapshot.id}
           personSnapshot={personSnapshot}
@@ -21,6 +30,14 @@ export default function PersonSnapshotList({ personSnapshots, searchPersonSnapsh
           onClickAction={onClickAction}
         />
       ))}
+      {displayCount < personSnapshots.length && (
+        <button
+          onClick={() => setDisplayCount(displayCount + MAX_ITEMS)}
+          className={styles.primaryButton}
+        >
+          Load More
+        </button>
+      )}
     </div>
   );
 }
