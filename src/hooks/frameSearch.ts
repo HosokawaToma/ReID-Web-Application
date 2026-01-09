@@ -2,7 +2,7 @@ import { ApiV1FrameImageSearch } from "@/lib/api/v1/frameImageSearch";
 import { ApiV1FrameSearch } from "@/lib/api/v1/frameSearch";
 import { timestampToString } from "@/lib/util/date";
 import { FrameMetaData } from "@/types/frames";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export interface FrameSearchProps {
   token: string | null;
@@ -18,7 +18,7 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
 
   const [frames, setFrames] = useState<FrameMetaData[]>([]);
   const [frameImages, setFrameImages] = useState<Record<string, Blob | null>>({});
-
+  const frameImagesRef = useRef<Record<string, Blob | null>>({});
   const searchFrames = useCallback(async () => {
     if (!token) return;
 
@@ -45,11 +45,12 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
 
   const searchFrameImage = useCallback(async (frameId: string) => {
     if (!token) return null;
-    if (frameImages[frameId]) return frameImages[frameId];
+    if (frameImagesRef.current[frameId]) return frameImagesRef.current[frameId];
     const response = await ApiV1FrameImageSearch(token, frameId);
+    frameImagesRef.current[frameId] = response;
     setFrameImages((prev) => ({ ...prev, [frameId]: response }));
     return response;
-  }, [token, frameImages]);
+  }, [token]);
 
   return {
     ids,
