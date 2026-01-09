@@ -6,10 +6,10 @@ import styles from "../styles/index.module.css";
 export interface FrameSearchItemProps {
   frameMetaData: FrameMetaData;
   searchFrameImage: (frameId: string) => Promise<Blob | null>;
-  onFrameClickAction: ((frameId: string) => void) | null;
+  onItemClickAction: ((frameId: string) => void) | null;
 }
 
-export default function FrameSearchItem({ frameMetaData, searchFrameImage, onFrameClickAction }: FrameSearchItemProps) {
+export default function FrameSearchItem({ frameMetaData, searchFrameImage, onItemClickAction }: FrameSearchItemProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   useEffect(() => {
     searchFrameImage(frameMetaData.id).then((imageBlob) => {
@@ -19,9 +19,9 @@ export default function FrameSearchItem({ frameMetaData, searchFrameImage, onFra
   }, [searchFrameImage, frameMetaData.id]);
 
   return (
-    <div className={styles.defaultCard} onClick={() => onFrameClickAction?.(frameMetaData.id)}>
-      <div className={styles.defaultImageContainer} onClick={() => onFrameClickAction?.(frameMetaData.id)}>
-        <div className={styles.defaultImageBackground} onClick={() => onFrameClickAction?.(frameMetaData.id)}>
+    <div className={styles.defaultCard} onClick={() => onItemClickAction?.(frameMetaData.id)}>
+      <div className={styles.defaultImageContainer} onClick={() => onItemClickAction?.(frameMetaData.id)}>
+        <div className={styles.defaultImageBackground} onClick={() => onItemClickAction?.(frameMetaData.id)}>
           {imageUrl && <Image src={imageUrl} alt="Frame" fill style={{ objectFit: "contain" }} />}
           {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
         </div>

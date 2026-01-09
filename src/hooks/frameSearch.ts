@@ -17,6 +17,7 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
   const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("desc");
 
   const [frames, setFrames] = useState<FrameMetaData[]>([]);
+  const [frameImages, setFrameImages] = useState<Record<string, Blob | null>>({});
 
   const searchFrames = useCallback(async () => {
     if (!token) return;
@@ -44,9 +45,11 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
 
   const searchFrameImage = useCallback(async (frameId: string) => {
     if (!token) return null;
+    if (frameImages[frameId]) return frameImages[frameId];
     const response = await ApiV1FrameImageSearch(token, frameId);
+    setFrameImages((prev) => ({ ...prev, [frameId]: response }));
     return response;
-  }, [token]);
+  }, [token, frameImages]);
 
   return {
     ids,
@@ -56,6 +59,7 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
     beforeTimestamp,
     sortOrderByTimestamp,
     frames,
+    frameImages,
     setIds,
     setCameraIds,
     setViewIds,

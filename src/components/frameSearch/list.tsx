@@ -6,13 +6,13 @@ import FrameSearchItem from "./item";
 export interface FrameSearchListProps {
   frameMetaDatas: FrameMetaData[];
   searchFrameImage: (frameId: string) => Promise<Blob | null>;
-  onFrameClickAction: ((frameId: string) => void) | null;
+  onItemClickAction: ((frameId: string) => void) | null;
 }
 
 export default function FrameSearchList({
   frameMetaDatas,
   searchFrameImage,
-  onFrameClickAction,
+  onItemClickAction,
 }: FrameSearchListProps) {
   const MAX_ITEMS = 1;
   const [displayCount, setDisplayCount] = useState(MAX_ITEMS);
@@ -29,7 +29,7 @@ export default function FrameSearchList({
           key={frameMetaData.id}
           frameMetaData={frameMetaData}
           searchFrameImage={searchFrameImage}
-          onFrameClickAction={onFrameClickAction}
+          onItemClickAction={onItemClickAction}
         />
       ))}
       {displayCount < frameMetaDatas.length && (
