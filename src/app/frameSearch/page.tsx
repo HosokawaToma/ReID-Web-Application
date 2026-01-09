@@ -27,6 +27,7 @@ export default function FrameSearch() {
     setBeforeTimestamp,
     setSortOrderByTimestamp,
     searchFrames,
+    searchFrameImage,
   } = useFrameSearch({ token });
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function FrameSearch() {
           boxSizing: "border-box"
         }}>
         <FrameSearchScreen frame={selectedFrame} />
-        <FrameSearchList frames={frames} onFrameClickAction={setSelectedFrame} />
+        <FrameSearchList frameMetaDatas={frames} searchFrameImage={searchFrameImage} onFrameClickAction={setSelectedFrame} />
       </div>
     </div>
   );

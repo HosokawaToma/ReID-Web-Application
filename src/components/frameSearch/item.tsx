@@ -1,38 +1,36 @@
-import { Frame } from "@/types/frames";
+import { FrameMetaData } from "@/types/frames";
 import Image from "next/image";
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import styles from "../styles/index.module.css";
 
 export interface FrameSearchItemProps {
-  frame: Frame;
-  onFrameClickAction: ((frame: Frame) => void) | null;
+  frameMetaData: FrameMetaData;
+  searchFrameImage: (frameId: string) => Promise<Blob | null>;
+  onFrameClickAction: ((frameId: string) => void) | null;
 }
 
-export default function FrameSearchItem({ frame, onFrameClickAction }: FrameSearchItemProps) {
-  const imageUrl = useMemo(() => {
-    if (!frame.imageBlob) return null;
-    return URL.createObjectURL(frame.imageBlob);
-  }, [frame.imageBlob]);
-
+export default function FrameSearchItem({ frameMetaData, searchFrameImage, onFrameClickAction }: FrameSearchItemProps) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   useEffect(() => {
-    return () => {
-      if (imageUrl) URL.revokeObjectURL(imageUrl);
-    };
-  }, [imageUrl]);
+    searchFrameImage(frameMetaData.id).then((imageBlob) => {
+      if (!imageBlob) return;
+      setImageUrl(URL.createObjectURL(imageBlob));
+    });
+  }, [searchFrameImage, frameMetaData.id]);
 
   return (
-    <div className={styles.defaultCard} onClick={() => onFrameClickAction?.(frame)}>
-      <div className={styles.defaultImageContainer} onClick={() => onFrameClickAction?.(frame)}>
-        <div className={styles.defaultImageBackground} onClick={() => onFrameClickAction?.(frame)}>
+    <div className={styles.defaultCard} onClick={() => onFrameClickAction?.(frameMetaData.id)}>
+      <div className={styles.defaultImageContainer} onClick={() => onFrameClickAction?.(frameMetaData.id)}>
+        <div className={styles.defaultImageBackground} onClick={() => onFrameClickAction?.(frameMetaData.id)}>
           {imageUrl && <Image src={imageUrl} alt="Frame" fill style={{ objectFit: "contain" }} />}
           {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
         </div>
       </div>
       <div className={styles.cardMetaDataContainer}>
-        <p className={styles.cardMainMetaDataText}>Frame ID: {frame.id}</p>
-        <p className={styles.cardMetaDataText}>Camera ID: {frame.cameraId}</p>
-        <p className={styles.cardMetaDataText}>View ID: {frame.viewId}</p>
-        <p className={styles.cardMetaDataText}>Timestamp: {frame.timestamp.toLocaleString()}</p>
+        <p className={styles.cardMainMetaDataText}>Frame ID: {frameMetaData.id}</p>
+        <p className={styles.cardMetaDataText}>Camera ID: {frameMetaData.cameraId}</p>
+        <p className={styles.cardMetaDataText}>View ID: {frameMetaData.viewId}</p>
+        <p className={styles.cardMetaDataText}>Timestamp: {frameMetaData.timestamp.toLocaleString()}</p>
       </div>
     </div>
   );

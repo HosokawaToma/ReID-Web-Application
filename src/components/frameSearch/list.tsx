@@ -1,22 +1,45 @@
-import { Frame } from "@/types/frames";
+import { FrameMetaData } from "@/types/frames";
+import { useState } from "react";
 import styles from "../styles/index.module.css";
 import FrameSearchItem from "./item";
 
 export interface FrameSearchListProps {
-  frames: Frame[];
-  onFrameClickAction: ((frame: Frame) => void) | null;
+  frameMetaDatas: FrameMetaData[];
+  searchFrameImage: (frameId: string) => Promise<Blob | null>;
+  onFrameClickAction: ((frameId: string) => void) | null;
 }
 
-export default function FrameSearchList({ frames, onFrameClickAction }: FrameSearchListProps) {
+export default function FrameSearchList({
+  frameMetaDatas,
+  searchFrameImage,
+  onFrameClickAction,
+}: FrameSearchListProps) {
+  const MAX_ITEMS = 1;
+  const [displayCount, setDisplayCount] = useState(MAX_ITEMS);
+
+  const visibleFrameMetaDatas = frameMetaDatas.slice(0, displayCount);
+
   return (
-    <div className={styles.listContainer}>
-      {frames.map((frame) => (
+    <div
+      className={styles.listContainer}
+      style={{ overflowY: "auto", height: "100%" }}
+    >
+      {visibleFrameMetaDatas.map((frameMetaData) => (
         <FrameSearchItem
-          key={frame.id}
-          frame={frame}
+          key={frameMetaData.id}
+          frameMetaData={frameMetaData}
+          searchFrameImage={searchFrameImage}
           onFrameClickAction={onFrameClickAction}
         />
       ))}
+      {displayCount < frameMetaDatas.length && (
+        <button
+          onClick={() => setDisplayCount(displayCount + MAX_ITEMS)}
+          className={styles.primaryButton}
+        >
+          Load More
+        </button>
+      )}
     </div>
   );
 }

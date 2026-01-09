@@ -1,7 +1,7 @@
 import { ApiV1FrameImageSearch } from "@/lib/api/v1/frameImageSearch";
 import { ApiV1FrameSearch } from "@/lib/api/v1/frameSearch";
 import { timestampToString } from "@/lib/util/date";
-import { Frame } from "@/types/frames";
+import { FrameMetaData } from "@/types/frames";
 import { useCallback, useState } from "react";
 
 export interface FrameSearchProps {
@@ -16,7 +16,7 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
   const [beforeTimestamp, setBeforeTimestamp] = useState<Date | null>(null);
   const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("desc");
 
-  const [frames, setFrames] = useState<Frame[]>([]);
+  const [frames, setFrames] = useState<FrameMetaData[]>([]);
 
   const searchFrames = useCallback(async () => {
     if (!token) return;
@@ -32,12 +32,11 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
       ordering: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
     });
 
-    const baseFrames: Frame[] = response.frames.map((frame) => ({
+    const baseFrames: FrameMetaData[] = response.frames.map((frame) => ({
       id: frame.id,
       cameraId: frame.camera_id,
       viewId: frame.view_id,
       timestamp: new Date(frame.timestamp),
-      imageBlob: null,
     }));
 
     setFrames(baseFrames);
@@ -46,7 +45,7 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
   const searchFrameImage = useCallback(async (frameId: string) => {
     if (!token) return null;
     const response = await ApiV1FrameImageSearch(token, frameId);
-    setFrames((prev) => prev.map((frame) => (frame.id === frameId ? { ...frame, imageBlob: response } : frame)));
+    return response;
   }, [token]);
 
   return {
