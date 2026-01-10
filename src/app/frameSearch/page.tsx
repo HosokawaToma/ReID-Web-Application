@@ -32,8 +32,9 @@ export default function FrameSearch() {
   const { selectedFrameMetaData, selectedFrameImage, selectFrameById } = useFrameSelect({ frameMetaDatas: frames, frameImages: frameImages });
 
   useEffect(() => {
+    if (frames.length > 0) return;
     searchFrames();
-  }, [searchFrames]);
+  }, [frames, searchFrames]);
 
   useEffect(() => {
     if (frames.length > 0) {
