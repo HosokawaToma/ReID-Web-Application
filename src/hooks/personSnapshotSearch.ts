@@ -25,19 +25,14 @@ export const usePersonSnapshotSearch = (token: string | null) => {
     if (!token) return;
 
     const response = await ApiV1PersonSnapshotSearch(token, {
-      filters: {
-        ids: null,
-        camera_ids: cameraIds,
-        view_ids: viewIds,
-        person_ids: personIds,
-        is_junk: isJunk,
-        timestamp_after: afterTimestamp ? timestampToString(afterTimestamp) : null,
-        timestamp_before: beforeTimestamp ? timestampToString(beforeTimestamp) : null,
-      },
-      ordering: {
-        timestamp_asc: sortOrderByTimestamp === "asc",
-        timestamp_desc: sortOrderByTimestamp === "desc",
-      },
+      ids: null,
+      camera_ids: cameraIds,
+      view_ids: viewIds,
+      person_ids: personIds,
+      is_junk: isJunk,
+      timestamp_after: afterTimestamp ? timestampToString(afterTimestamp) : null,
+      timestamp_before: beforeTimestamp ? timestampToString(beforeTimestamp) : null,
+      sort_by_list: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
     });
 
     const baseSnapshots: PersonSnapshotMetaData[] = response.person_snapshots.map(
@@ -66,7 +61,6 @@ export const usePersonSnapshotSearch = (token: string | null) => {
   const searchPersonSnapshotImage = useCallback(
     async (personSnapshotId: string) => {
       if (!token) return null;
-      // useRefで最新のキャッシュを確認（関数が再作成されないようにするため）
       if (personSnapshotImagesRef.current[personSnapshotId]) {
         return personSnapshotImagesRef.current[personSnapshotId];
       }
