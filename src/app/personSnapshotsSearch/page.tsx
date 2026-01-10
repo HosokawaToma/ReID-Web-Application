@@ -30,8 +30,9 @@ export default function PersonSnapshotsSearch() {
   } = usePersonSnapshotSearch(token);
 
   useEffect(() => {
+    if (personSnapshots.length > 0) return;
     searchPersonSnapshots();
-  }, [searchPersonSnapshots]);
+  }, [personSnapshots, searchPersonSnapshots]);
 
   return (
   <div style={{ width: "80%", height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
