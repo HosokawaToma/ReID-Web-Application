@@ -265,7 +265,10 @@ export default function PersonSnapshotSearchForm({
         </div>
 
         <div className={styles.buttonContainer}>
-          <button type="submit" className={`${styles.primaryButton} ${styles.fullWidthButton}`}>
+          <button
+            type="submit"
+            className={`${styles.primaryButton} ${styles.fullWidthButton}`}
+            onClick={onSubmitAction}>
             検索
           </button>
           <button
