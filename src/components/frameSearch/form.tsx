@@ -118,7 +118,7 @@ export default function FrameSearchForm({
         </div>
         </div>
         <div className={styles.twoColumnGrid}>
-          <button type="submit" className={styles.primaryButton}>Search</button>
+          <button type="submit" onClick={onSubmitAction} className={styles.primaryButton}>Search</button>
           <button type="button" onClick={handleReset} className={styles.defaultButton}>Reset</button>
         </div>
       </div>
