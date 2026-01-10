@@ -12,19 +12,14 @@ export interface PersonSnapshot {
 }
 
 export interface PersonSnapshotSearchRequest {
-  filters: {
-    ids: string[] | null;
-    camera_ids: number[] | null;
-    view_ids: number[] | null;
-    person_ids: string[] | null;
-    is_junk: boolean | null;
-    timestamp_after: string | null;
-    timestamp_before: string | null;
-  };
-  ordering: {
-    timestamp_asc: boolean | null;
-    timestamp_desc: boolean | null;
-  };
+  ids: string[] | null;
+  camera_ids: number[] | null;
+  view_ids: number[] | null;
+  is_junk: boolean | null;
+  person_ids: string[] | null;
+  timestamp_after: string | null;
+  timestamp_before: string | null;
+  sort_by_list: ("timestamp_asc" | "timestamp_desc")[];
 }
 
 export const ApiV1PersonSnapshotSearch = async (
@@ -40,10 +35,7 @@ export const ApiV1PersonSnapshotSearch = async (
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          filters: request?.filters || null,
-          ordering: request?.ordering || null,
-        }),
+        body: JSON.stringify(request),
       }
     )
   )
