@@ -5,7 +5,7 @@ import FrameSearchList from "@/components/frameSearch/list";
 import FrameSearchScreen from "@/components/frameSearch/screen";
 import { useFrameSearch } from "@/hooks/frameSearch";
 import { useFrameSelect } from "@/hooks/frameSelect";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 
@@ -31,8 +31,11 @@ export default function FrameSearch() {
   } = useFrameSearch({ token });
   const { selectedFrameMetaData, selectedFrameImage, selectFrameById } = useFrameSelect({ frameMetaDatas: frames, frameImages: frameImages });
 
+  const firstSearch = useRef(false);
+
   useEffect(() => {
-    if (frames.length > 0) return;
+    if (firstSearch.current) return;
+    firstSearch.current = true;
     searchFrames();
   }, [frames, searchFrames]);
 
