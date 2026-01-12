@@ -3,7 +3,6 @@
 import PersonSnapshotList from "@/components/person_snapshot/list";
 import PersonSnapshotSearchForm from "@/components/person_snapshot/search_form";
 import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
-import { useEffect, useRef } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 export default function PersonSnapshotsSearch() {
@@ -28,14 +27,6 @@ export default function PersonSnapshotsSearch() {
     searchPersonSnapshotImage,
     addPersonId,
   } = usePersonSnapshotSearch(token);
-
-  const firstSearch = useRef(false);
-
-  useEffect(() => {
-    if (firstSearch.current) return;
-    firstSearch.current = true;
-    searchPersonSnapshots();
-  }, [personSnapshots, searchPersonSnapshots]);
 
   return (
   <div style={{ width: "80%", height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
