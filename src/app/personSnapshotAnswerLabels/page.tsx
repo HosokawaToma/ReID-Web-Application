@@ -64,6 +64,35 @@ export default function PersonSnapshotAnswerLabels() {
     });
   };
 
+  // 割り当ては非表示チェックボックスの状態
+  const [hideAssigned, setHideAssigned] = useState<boolean>(false);
+
+  // PersonSnapshotAnswersに存在するperson_idのセット
+  const assignedPersonIds = useMemo(() => {
+    const ids = new Set<string>();
+    personSnapshotAnswers.forEach((answer) => {
+      if (answer.personId) {
+        ids.add(answer.personId);
+      }
+    });
+    return ids;
+  }, [personSnapshotAnswers]);
+
+  // 表示するPersonSnapshots（割り当ては非表示がONの場合、Answerに存在するperson_idを持つものを除外）
+  const displayedPersonSnapshots = useMemo(() => {
+    if (!hideAssigned) {
+      return personSnapshots;
+    }
+    return personSnapshots.filter((snapshot) => {
+      // personIdがnullまたはundefinedの場合は表示
+      if (!snapshot.personId) {
+        return true;
+      }
+      // assignedPersonIdsに含まれていない場合は表示
+      return !assignedPersonIds.has(snapshot.personId);
+    });
+  }, [personSnapshots, hideAssigned, assignedPersonIds]);
+
   // personIdの重複を除去したpersonSnapshotAnswers
   const uniquePersonSnapshotAnswers = useMemo(() => {
     const seen = new Set<string>();
@@ -451,6 +480,19 @@ export default function PersonSnapshotAnswerLabels() {
           </div>
         </div>
 
+        {/* 割り当ては非表示チェックボックス */}
+        <div style={{ marginBottom: "var(--spacing-medium)" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "var(--spacing-small)", cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={hideAssigned}
+              onChange={(e) => setHideAssigned(e.target.checked)}
+              style={{ cursor: "pointer" }}
+            />
+            <span style={{ fontSize: "var(--font-size-default)" }}>割り当ては非表示</span>
+          </label>
+        </div>
+
         {/* ボタン群 */}
         <div style={{ marginBottom: "var(--spacing-medium)", display: "flex", gap: "var(--spacing-small)" }}>
           <button
@@ -492,7 +534,7 @@ export default function PersonSnapshotAnswerLabels() {
         </div>
 
         <PersonSnapshotList
-          personSnapshots={personSnapshots}
+          personSnapshots={displayedPersonSnapshots}
           searchPersonSnapshotImage={searchPersonSnapshotImage}
           onClickAction={handlePersonSnapshotToggle}
           selectedPersonSnapshotIds={selectedPersonSnapshotIds}
