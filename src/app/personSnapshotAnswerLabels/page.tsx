@@ -51,6 +51,19 @@ export default function PersonSnapshotAnswerLabels() {
     });
   };
 
+  // 選択中のPersonSnapshotAnswerのIDを管理（一度に1つだけ）
+  const [selectedPersonSnapshotAnswerId, setSelectedPersonSnapshotAnswerId] = useState<string | null>(null);
+
+  // PersonSnapshotAnswerの選択を切り替え
+  const handlePersonSnapshotAnswerToggle = (answerId: string) => {
+    setSelectedPersonSnapshotAnswerId((prev) => {
+      if (prev === answerId) {
+        return null; // 同じアイテムをクリックしたら選択解除
+      }
+      return answerId; // 新しいアイテムを選択
+    });
+  };
+
   // personIdの重複を除去したpersonSnapshotAnswers
   const uniquePersonSnapshotAnswers = useMemo(() => {
     const seen = new Set<string>();
@@ -198,8 +211,19 @@ export default function PersonSnapshotAnswerLabels() {
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
           {uniquePersonSnapshotAnswers.map((answer) => {
             const imageUrl = answerImageUrls[answer.id];
+            const isSelected = selectedPersonSnapshotAnswerId === answer.id;
             return (
-              <div key={answer.id} className={answer.isJunk ? styles.errorCard : styles.defaultCard}>
+              <div
+                key={answer.id}
+                className={answer.isJunk ? styles.errorCard : styles.defaultCard}
+                onClick={() => handlePersonSnapshotAnswerToggle(answer.id)}
+                style={{
+                  cursor: "pointer",
+                  backgroundColor: isSelected ? "#ffeb3b" : undefined,
+                  borderColor: isSelected ? "#fbc02d" : undefined,
+                  borderWidth: isSelected ? "2px" : undefined,
+                }}
+              >
                 <div className={answer.isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
                   <div className={answer.isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
                     {answer.isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
