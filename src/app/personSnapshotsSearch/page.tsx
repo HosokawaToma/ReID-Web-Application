@@ -1,7 +1,7 @@
 "use client";
 
-import PersonSnapshotList from "@/components/person_snapshot/list";
-import PersonSnapshotSearchForm from "@/components/person_snapshot/search_form";
+import PersonSnapshotList from "@/components/personSnapshot/list";
+import PersonSnapshotSearchForm from "@/components/personSnapshot/search_form";
 import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
 import { useTokenContext } from "../context/TokenContext";
 
