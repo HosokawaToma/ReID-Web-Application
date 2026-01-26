@@ -1,13 +1,13 @@
 "use client";
 
-import PersonSnapshotItem from "@/components/person_snapshot/item";
 import PersonSnapshotList from "@/components/person_snapshot/list";
 import styles from "@/components/styles/index.module.css";
 import { usePersonSnapshotAnswerSearch } from "@/hooks/personSnapshotAnswerSearch";
 import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
 import { ApiV1PersonSnapshotAnswerNewId } from "@/lib/api/v1/personSnapshotAnswerNewId";
 import { toDateInputString, toDateTime, toTimeInputString } from "@/lib/util/date";
-import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 export default function PersonSnapshotAnswerLabels() {
@@ -51,16 +51,30 @@ export default function PersonSnapshotAnswerLabels() {
     });
   };
 
-  // 各PersonSnapshotAnswerに対応するPersonSnapshotsを取得
-  const answerPersonSnapshots = useMemo(() => {
-    const result: Record<string, typeof personSnapshots> = {};
-    personSnapshotAnswers.forEach((answer) => {
-      result[answer.id] = personSnapshots.filter(
-        (snapshot) => snapshot.personId === answer.personId
-      );
-    });
-    return result;
-  }, [personSnapshotAnswers, personSnapshots]);
+  // 各PersonSnapshotAnswerの画像URLを管理
+  const [answerImageUrls, setAnswerImageUrls] = useState<Record<string, string>>({});
+
+  // answer.idを使って画像を取得
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchImages = async () => {
+      const newImageUrls: Record<string, string> = {};
+      for (const answer of personSnapshotAnswers) {
+        try {
+          const imageBlob = await searchPersonSnapshotImage(answer.id);
+          if (imageBlob) {
+            newImageUrls[answer.id] = URL.createObjectURL(imageBlob);
+          }
+        } catch (error) {
+          console.error(`Failed to load image for answer ${answer.id}:`, error);
+        }
+      }
+      setAnswerImageUrls(newImageUrls);
+    };
+
+    fetchImages();
+  }, [personSnapshotAnswers, token, searchPersonSnapshotImage]);
 
   // personSnapshotsが更新されたら、personSnapshotAnswersを取得
   useEffect(() => {
@@ -171,32 +185,33 @@ export default function PersonSnapshotAnswerLabels() {
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
           {personSnapshotAnswers.map((answer) => {
-            const snapshots = answerPersonSnapshots[answer.id] || [];
+            const imageUrl = answerImageUrls[answer.id];
             return (
-              <div key={answer.id} style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
-                <div className={answer.isJunk ? styles.errorCard : styles.defaultCard}>
-                  <div className={styles.cardMetaDataContainer}>
-                    <p className={styles.cardMainMetaDataText}>
-                      ID: {answer.id}
-                    </p>
-                    <p className={styles.cardMainMetaDataText}>
-                      Person ID: {answer.personId}
-                    </p>
-                    <p className={styles.cardMetaDataText}>
-                      {answer.isJunk ? "JUNK" : "Valid"}
-                    </p>
+              <div key={answer.id} className={answer.isJunk ? styles.errorCard : styles.defaultCard}>
+                <div className={answer.isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
+                  <div className={answer.isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
+                    {answer.isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
+                    {imageUrl && (
+                      <Image
+                        src={imageUrl}
+                        alt="Person Snapshot Image"
+                        fill
+                        style={{ objectFit: "contain" }}
+                      />
+                    )}
+                    {!imageUrl && <div className={styles.imageLoading}>Loading...</div>}
                   </div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)", paddingLeft: "var(--spacing-medium)" }}>
-                  {snapshots.map((snapshot) => (
-                    <PersonSnapshotItem
-                      key={snapshot.id}
-                      personSnapshot={snapshot}
-                      searchPersonSnapshotImage={searchPersonSnapshotImage}
-                      onClickAction={() => {}}
-                      isSelected={false}
-                    />
-                  ))}
+                <div className={styles.cardMetaDataContainer}>
+                  <p className={styles.cardMainMetaDataText}>
+                    ID: {answer.id}
+                  </p>
+                  <p className={styles.cardMainMetaDataText}>
+                    Person ID: {answer.personId}
+                  </p>
+                  <p className={styles.cardMetaDataText}>
+                    {answer.isJunk ? "JUNK" : "Valid"}
+                  </p>
                 </div>
               </div>
             );
