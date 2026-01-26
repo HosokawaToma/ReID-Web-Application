@@ -9,7 +9,8 @@ export interface PersonSnapshotAnswer {
 }
 
 export interface PersonSnapshotAnswerSearchRequest {
-  person_ids: string[];
+  person_snapshot_ids: string[] | null;
+  person_ids: string[] | null;
   is_junk: boolean | null;
   sort_by_list: ("created_at_asc" | "created_at_desc")[];
 }
