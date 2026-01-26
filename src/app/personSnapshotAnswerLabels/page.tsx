@@ -7,7 +7,7 @@ import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
 import { ApiV1PersonSnapshotAnswerNewId } from "@/lib/api/v1/personSnapshotAnswerNewId";
 import { toDateInputString, toDateTime, toTimeInputString } from "@/lib/util/date";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 export default function PersonSnapshotAnswerLabels() {
@@ -51,6 +51,18 @@ export default function PersonSnapshotAnswerLabels() {
     });
   };
 
+  // personIdの重複を除去したpersonSnapshotAnswers
+  const uniquePersonSnapshotAnswers = useMemo(() => {
+    const seen = new Set<string>();
+    return personSnapshotAnswers.filter((answer) => {
+      if (seen.has(answer.personId)) {
+        return false;
+      }
+      seen.add(answer.personId);
+      return true;
+    });
+  }, [personSnapshotAnswers]);
+
   // 各PersonSnapshotAnswerの画像URLを管理
   const [answerImageUrls, setAnswerImageUrls] = useState<Record<string, string>>({});
 
@@ -60,7 +72,7 @@ export default function PersonSnapshotAnswerLabels() {
 
     const fetchImages = async () => {
       const newImageUrls: Record<string, string> = {};
-      for (const answer of personSnapshotAnswers) {
+      for (const answer of uniquePersonSnapshotAnswers) {
         try {
           const imageBlob = await searchPersonSnapshotImage(answer.id);
           if (imageBlob) {
@@ -74,7 +86,7 @@ export default function PersonSnapshotAnswerLabels() {
     };
 
     fetchImages();
-  }, [personSnapshotAnswers, token, searchPersonSnapshotImage]);
+  }, [uniquePersonSnapshotAnswers, token, searchPersonSnapshotImage]);
 
   // personSnapshotsが更新されたら、personSnapshotAnswersを取得
   useEffect(() => {
@@ -184,7 +196,7 @@ export default function PersonSnapshotAnswerLabels() {
           Person Snapshot Answers
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
-          {personSnapshotAnswers.map((answer) => {
+          {uniquePersonSnapshotAnswers.map((answer) => {
             const imageUrl = answerImageUrls[answer.id];
             return (
               <div key={answer.id} className={answer.isJunk ? styles.errorCard : styles.defaultCard}>
@@ -216,7 +228,7 @@ export default function PersonSnapshotAnswerLabels() {
               </div>
             );
           })}
-          {personSnapshotAnswers.length === 0 && (
+          {uniquePersonSnapshotAnswers.length === 0 && (
             <p style={{
               color: "var(--default-secondary-text-color)",
               textAlign: "center",
