@@ -241,6 +241,41 @@ export default function PersonSnapshotAnswerLabels() {
     }
   };
 
+  // ゴミデータを割り当てるハンドラー
+  const handleAssignJunk = async () => {
+    if (!token) return;
+    if (selectedPersonSnapshotIds.size === 0) {
+      alert("選択中のPersonSnapshotがありません");
+      return;
+    }
+
+    try {
+      const selectedIds = Array.from(selectedPersonSnapshotIds);
+      await ApiV1PersonSnapshotAnswerNewId(token, {
+        person_snapshot_ids: selectedIds,
+        person_id: null, // person_idをnullにする
+        is_junk: true, // is_junkをTrueにする
+      });
+
+      // 成功したら選択をクリアして再検索
+      setSelectedPersonSnapshotIds(new Set());
+
+      // PersonSnapshotsを再検索
+      setIsJunk(null);
+      await searchPersonSnapshots();
+
+      // personSnapshotAnswersも同じ条件で再検索
+      setPersonIdsForAnswer(null);
+      setIsJunkForAnswer(null);
+      await searchPersonSnapshotAnswers();
+
+      alert("ゴミデータを割り当てました");
+    } catch (error) {
+      alert("ゴミデータの割り当てに失敗しました");
+      console.error(error);
+    }
+  };
+
   return (
     <div style={{
       width: "100%",
@@ -441,6 +476,18 @@ export default function PersonSnapshotAnswerLabels() {
             }}
           >
             同じIDを割り当て ({selectedPersonSnapshotIds.size}件選択中)
+          </button>
+          <button
+            type="button"
+            onClick={handleAssignJunk}
+            disabled={selectedPersonSnapshotIds.size === 0}
+            className={styles.primaryButton}
+            style={{
+              opacity: selectedPersonSnapshotIds.size === 0 ? 0.5 : 1,
+              cursor: selectedPersonSnapshotIds.size === 0 ? "not-allowed" : "pointer"
+            }}
+          >
+            ゴミデータを割り当て ({selectedPersonSnapshotIds.size}件選択中)
           </button>
         </div>
 
