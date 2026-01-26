@@ -9,9 +9,10 @@ export interface PersonSnapshotListProps {
   personSnapshots: PersonSnapshotMetaData[];
   searchPersonSnapshotImage: (personSnapshotId: string) => Promise<Blob | null>;
   onClickAction: (personSnapshotId: string) => void;
+  onShowRanking?: (personSnapshotId: string) => void;
 }
 
-export default function PersonSnapshotList({ personSnapshots, searchPersonSnapshotImage, onClickAction }: PersonSnapshotListProps) {
+export default function PersonSnapshotList({ personSnapshots, searchPersonSnapshotImage, onClickAction, onShowRanking }: PersonSnapshotListProps) {
   const MAX_ITEMS = 30;
   const [displayCount, setDisplayCount] = useState(MAX_ITEMS);
   const [visiblePersonSnapshots, setVisiblePersonSnapshots] = useState<PersonSnapshotMetaData[]>([]);
@@ -28,6 +29,7 @@ export default function PersonSnapshotList({ personSnapshots, searchPersonSnapsh
           personSnapshot={personSnapshot}
           searchPersonSnapshotImage={searchPersonSnapshotImage}
           onClickAction={onClickAction}
+          onShowRanking={onShowRanking}
         />
       ))}
       {displayCount < personSnapshots.length && (

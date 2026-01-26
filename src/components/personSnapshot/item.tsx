@@ -8,12 +8,14 @@ export interface PersonSnapshotItemProps {
   personSnapshot: PersonSnapshotMetaData;
   searchPersonSnapshotImage: (personSnapshotId: string) => Promise<Blob | null>;
   onClickAction: (personSnapshotId: string) => void;
+  onShowRanking?: (personSnapshotId: string) => void;
 }
 
 export default function PersonSnapshotItem({
   personSnapshot,
   searchPersonSnapshotImage,
   onClickAction,
+  onShowRanking,
 }: PersonSnapshotItemProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const isJunk = personSnapshot.isJunk;
@@ -48,6 +50,15 @@ export default function PersonSnapshotItem({
         <p className={styles.cardMetaDataText}>
           Timestamp: {personSnapshot.timestamp.toLocaleString()}
         </p>
+        {onShowRanking && (
+          <button
+            onClick={() => onShowRanking(personSnapshot.id)}
+            className={styles.primaryButton}
+            style={{ marginTop: "var(--spacing-small)" }}
+          >
+            Show Ranking
+          </button>
+        )}
       </div>
     </div>
   );
