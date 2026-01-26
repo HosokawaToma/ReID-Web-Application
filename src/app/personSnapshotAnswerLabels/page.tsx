@@ -186,6 +186,48 @@ export default function PersonSnapshotAnswerLabels() {
     }
   };
 
+  // 同じIDを割り当てるハンドラー
+  const handleAssignSameId = async () => {
+    if (!token) return;
+    if (selectedPersonSnapshotIds.size === 0) {
+      alert("選択中のPersonSnapshotがありません");
+      return;
+    }
+    if (!selectedPersonSnapshotAnswerId) {
+      alert("選択中のPersonSnapshotAnswerがありません");
+      return;
+    }
+
+    // 選択中のPersonSnapshotAnswerのperson_idを取得
+    const selectedAnswer = uniquePersonSnapshotAnswers.find(
+      (answer) => answer.id === selectedPersonSnapshotAnswerId
+    );
+    if (!selectedAnswer) {
+      alert("選択中のPersonSnapshotAnswerが見つかりません");
+      return;
+    }
+
+    try {
+      const selectedIds = Array.from(selectedPersonSnapshotIds);
+      await ApiV1PersonSnapshotAnswerNewId(token, {
+        person_snapshot_ids: selectedIds,
+        person_id: selectedAnswer.personId, // 選択中のPersonSnapshotAnswerのperson_idを割り当て
+        is_junk: false, // is_junkをFalseにする
+      });
+
+      // 成功したら選択をクリアして再検索
+      setSelectedPersonSnapshotIds(new Set());
+
+      // PersonSnapshotsを再検索
+      await searchPersonSnapshots();
+
+      alert("同じIDを割り当てました");
+    } catch (error) {
+      alert("同じIDの割り当てに失敗しました");
+      console.error(error);
+    }
+  };
+
   return (
     <div style={{
       width: "100%",
@@ -361,8 +403,8 @@ export default function PersonSnapshotAnswerLabels() {
           </div>
         </div>
 
-        {/* 新しいIDを割り当てるボタン */}
-        <div style={{ marginBottom: "var(--spacing-medium)" }}>
+        {/* ボタン群 */}
+        <div style={{ marginBottom: "var(--spacing-medium)", display: "flex", gap: "var(--spacing-small)" }}>
           <button
             type="button"
             onClick={handleAssignNewId}
@@ -374,6 +416,18 @@ export default function PersonSnapshotAnswerLabels() {
             }}
           >
             新しいIDを割り当て ({selectedPersonSnapshotIds.size}件選択中)
+          </button>
+          <button
+            type="button"
+            onClick={handleAssignSameId}
+            disabled={selectedPersonSnapshotIds.size === 0 || !selectedPersonSnapshotAnswerId}
+            className={styles.primaryButton}
+            style={{
+              opacity: selectedPersonSnapshotIds.size === 0 || !selectedPersonSnapshotAnswerId ? 0.5 : 1,
+              cursor: selectedPersonSnapshotIds.size === 0 || !selectedPersonSnapshotAnswerId ? "not-allowed" : "pointer"
+            }}
+          >
+            同じIDを割り当て ({selectedPersonSnapshotIds.size}件選択中)
           </button>
         </div>
 
