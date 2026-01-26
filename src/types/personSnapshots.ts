@@ -6,3 +6,9 @@ export interface PersonSnapshotMetaData {
   isJunk: boolean;
   personId: string | null;
 }
+
+export interface PersonSnapshotAnswer {
+  id: string;
+  personId: string;
+  isJunk: boolean;
+}
