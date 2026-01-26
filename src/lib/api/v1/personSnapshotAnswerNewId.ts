@@ -1,6 +1,6 @@
 export interface PersonSnapshotAnswerNewIdRequest {
   person_snapshot_ids: string[];
-  person_id: string;
+  person_id: string | null;
   is_junk: boolean;
 }
 

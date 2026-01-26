@@ -4,8 +4,9 @@ import PersonSnapshotList from "@/components/person_snapshot/list";
 import styles from "@/components/styles/index.module.css";
 import { usePersonSnapshotAnswerSearch } from "@/hooks/personSnapshotAnswerSearch";
 import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
+import { ApiV1PersonSnapshotAnswerNewId } from "@/lib/api/v1/personSnapshotAnswerNewId";
 import { toDateInputString, toDateTime, toTimeInputString } from "@/lib/util/date";
-import { useEffect, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 export default function PersonSnapshotAnswerLabels() {
@@ -32,6 +33,22 @@ export default function PersonSnapshotAnswerLabels() {
     setBeforeTimestamp,
     searchPersonSnapshots,
   } = usePersonSnapshotSearch(token);
+
+  // 選択中のpersonSnapshotsのIDを管理
+  const [selectedPersonSnapshotIds, setSelectedPersonSnapshotIds] = useState<Set<string>>(new Set());
+
+  // personSnapshotの選択をトグル
+  const handlePersonSnapshotToggle = (personSnapshotId: string) => {
+    setSelectedPersonSnapshotIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(personSnapshotId)) {
+        newSet.delete(personSnapshotId);
+      } else {
+        newSet.add(personSnapshotId);
+      }
+      return newSet;
+    });
+  };
 
   // PersonSnapshotsで表示されているperson_idsを取得（nullを除外）
   // API側でis_junk=Falseと日付範囲でフィルタリングされているので、そのまま使用
@@ -63,22 +80,6 @@ export default function PersonSnapshotAnswerLabels() {
     });
   }, [personSnapshotAnswers, displayedPersonIds]);
 
-  // PersonSnapshotsで表示されているperson_idsでpersonSnapshotsAnswerを検索
-  // PersonSnapshotsの検索結果が変更されたときに実行
-  useEffect(() => {
-    if (!token) return;
-    if (displayedPersonIds.length === 0) {
-      // person_idsが空の場合は検索しない
-      return;
-    }
-    // PersonSnapshotsで表示されているperson_idsを設定
-    setPersonIdsForAnswer(displayedPersonIds);
-    setIsJunkForAnswer(null);
-    // created_at昇順でソート
-    setSortOrderByTimestampForAnswer("asc");
-    // 検索を実行
-    searchPersonSnapshotAnswers();
-  }, [token, displayedPersonIds, setPersonIdsForAnswer, setIsJunkForAnswer, setSortOrderByTimestampForAnswer, searchPersonSnapshotAnswers]);
 
   // 日付範囲変更のハンドラー
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,12 +111,71 @@ export default function PersonSnapshotAnswerLabels() {
   };
 
   // 検索実行ハンドラー
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!token) return;
-    // is_junk=False、timestamp昇順で検索
-    setIsJunk(false);
+    // is_junkに関係なく全て取得、timestamp昇順で検索
+    setIsJunk(null);
     setSortOrderByTimestamp("asc");
-    searchPersonSnapshots();
+    await searchPersonSnapshots();
+
+    // PersonSnapshotsの検索完了後、PersonSnapshotAnswerSearchも実行
+    // personSnapshotsから直接person_idsを計算
+    const updatedPersonIds = Array.from(new Set(
+      personSnapshots
+        .filter((snapshot) => snapshot.personId)
+        .map((snapshot) => snapshot.personId!)
+    ));
+
+    if (updatedPersonIds.length > 0) {
+      setPersonIdsForAnswer(updatedPersonIds);
+      setIsJunkForAnswer(null);
+      setSortOrderByTimestampForAnswer("asc");
+      await searchPersonSnapshotAnswers();
+    }
+  };
+
+  // 新しいIDを割り当てるハンドラー
+  const handleAssignNewId = async () => {
+    if (!token) return;
+    if (selectedPersonSnapshotIds.size === 0) {
+      alert("選択中のPersonSnapshotがありません");
+      return;
+    }
+
+    try {
+      const selectedIds = Array.from(selectedPersonSnapshotIds);
+      await ApiV1PersonSnapshotAnswerNewId(token, {
+        person_snapshot_ids: selectedIds,
+        person_id: null, // person_idをnullにする
+        is_junk: false, // is_junkをFalseにする
+      });
+
+      // 成功したら選択をクリアして再検索
+      setSelectedPersonSnapshotIds(new Set());
+
+      // PersonSnapshotsを再検索
+      await searchPersonSnapshots();
+
+      // PersonSnapshotAnswerSearchを使ってpersonSnapshotAnswerLabelを更新
+      // personSnapshotsから直接person_idsを計算
+      const updatedPersonIds = Array.from(new Set(
+        personSnapshots
+          .filter((snapshot) => snapshot.personId)
+          .map((snapshot) => snapshot.personId!)
+      ));
+
+      if (updatedPersonIds.length > 0) {
+        setPersonIdsForAnswer(updatedPersonIds);
+        setIsJunkForAnswer(null);
+        setSortOrderByTimestampForAnswer("asc");
+        await searchPersonSnapshotAnswers();
+      }
+
+      alert("新しいIDを割り当てました");
+    } catch (error) {
+      alert("新しいIDの割り当てに失敗しました");
+      console.error(error);
+    }
   };
 
   return (
@@ -182,7 +242,7 @@ export default function PersonSnapshotAnswerLabels() {
           fontSize: "var(--font-size-medium)",
           fontWeight: "var(--font-weight-medium)"
         }}>
-          Person Snapshots (is_junk=False)
+          Person Snapshots
         </h2>
 
         {/* 日付範囲指定フォーム */}
@@ -265,10 +325,27 @@ export default function PersonSnapshotAnswerLabels() {
           </div>
         </div>
 
+        {/* 新しいIDを割り当てるボタン */}
+        <div style={{ marginBottom: "var(--spacing-medium)" }}>
+          <button
+            type="button"
+            onClick={handleAssignNewId}
+            disabled={selectedPersonSnapshotIds.size === 0}
+            className={styles.primaryButton}
+            style={{
+              opacity: selectedPersonSnapshotIds.size === 0 ? 0.5 : 1,
+              cursor: selectedPersonSnapshotIds.size === 0 ? "not-allowed" : "pointer"
+            }}
+          >
+            新しいIDを割り当て ({selectedPersonSnapshotIds.size}件選択中)
+          </button>
+        </div>
+
         <PersonSnapshotList
           personSnapshots={personSnapshots}
           searchPersonSnapshotImage={searchPersonSnapshotImage}
-          onClickAction={() => {}}
+          onClickAction={handlePersonSnapshotToggle}
+          selectedPersonSnapshotIds={selectedPersonSnapshotIds}
         />
       </div>
     </div>
