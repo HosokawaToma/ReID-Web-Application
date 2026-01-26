@@ -12,6 +12,9 @@ export default function Header() {
           <Link href="/personSnapshotsSearch" className={styles.headerNavigationLink}>
             <div className={styles.headerNavigationItem}>Person Snapshots Search</div>
           </Link>
+          <Link href="/personSnapshotAnswerLabels" className={styles.headerNavigationLink}>
+            <div className={styles.headerNavigationItem}>Person Snapshot Answer Labels</div>
+          </Link>
           <Link href="/personFlowWeight" className={styles.headerNavigationLink}>
             <div className={styles.headerNavigationItem}>Person Flow Weight</div>
           </Link>
