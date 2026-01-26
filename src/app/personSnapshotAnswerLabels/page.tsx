@@ -81,44 +81,40 @@ export default function PersonSnapshotAnswerLabels() {
 
   // answer.idを使って画像を取得
   useEffect(() => {
-    if (!token) return;
+    if (!token || uniquePersonSnapshotAnswers.length === 0) return;
 
     const fetchImages = async () => {
-      const newImageUrls: Record<string, string> = {};
-      for (const answer of uniquePersonSnapshotAnswers) {
+      // 各画像を並列で取得（エラーが発生しても他の画像取得は続行）
+      const imagePromises = uniquePersonSnapshotAnswers.map(async (answer) => {
         try {
           const imageBlob = await searchPersonSnapshotImage(answer.id);
           if (imageBlob) {
-            newImageUrls[answer.id] = URL.createObjectURL(imageBlob);
+            return { id: answer.id, url: URL.createObjectURL(imageBlob) };
           }
+          return null;
         } catch (error) {
+          // エラーが発生してもログに記録するだけで、処理は続行
           console.error(`Failed to load image for answer ${answer.id}:`, error);
+          return null;
         }
-      }
-      setAnswerImageUrls(newImageUrls);
+      });
+
+      // すべての画像取得を待つ（エラーが発生しても続行）
+      const results = await Promise.allSettled(imagePromises);
+
+      // 取得できた画像URLを設定（エラーが発生したアイテムは画像なしで表示される）
+      const newImageUrls: Record<string, string> = {};
+      results.forEach((result) => {
+        if (result.status === "fulfilled" && result.value) {
+          newImageUrls[result.value.id] = result.value.url;
+        }
+      });
+
+      setAnswerImageUrls((prev) => ({ ...prev, ...newImageUrls }));
     };
 
     fetchImages();
   }, [uniquePersonSnapshotAnswers, token, searchPersonSnapshotImage]);
-
-  // personSnapshotsが更新されたら、personSnapshotAnswersを取得
-  useEffect(() => {
-    if (!token || personSnapshots.length === 0) return;
-
-    const personIds = Array.from(new Set(
-      personSnapshots
-        .filter((snapshot) => snapshot.personId)
-        .map((snapshot) => snapshot.personId!)
-    ));
-
-    if (personIds.length > 0) {
-      setPersonIdsForAnswer(personIds);
-      setIsJunkForAnswer(null);
-      setSortOrderByTimestampForAnswer("asc");
-      searchPersonSnapshotAnswers();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [personSnapshots, token]);
 
   // 日付範囲変更のハンドラー
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,9 +148,14 @@ export default function PersonSnapshotAnswerLabels() {
   // 検索実行ハンドラー
   const handleSearch = async () => {
     if (!token) return;
+    // personSnapshotsを検索
     setIsJunk(null);
-    setSortOrderByTimestamp("asc");
     await searchPersonSnapshots();
+
+    // personSnapshotAnswersも同じ条件で検索
+    setPersonIdsForAnswer(null);
+    setIsJunkForAnswer(null);
+    await searchPersonSnapshotAnswers();
   };
 
   // 新しいIDを割り当てるハンドラー
@@ -177,7 +178,13 @@ export default function PersonSnapshotAnswerLabels() {
       setSelectedPersonSnapshotIds(new Set());
 
       // PersonSnapshotsを再検索
+      setIsJunk(null);
       await searchPersonSnapshots();
+
+      // personSnapshotAnswersも同じ条件で再検索
+      setPersonIdsForAnswer(null);
+      setIsJunkForAnswer(null);
+      await searchPersonSnapshotAnswers();
 
       alert("新しいIDを割り当てました");
     } catch (error) {
@@ -219,7 +226,13 @@ export default function PersonSnapshotAnswerLabels() {
       setSelectedPersonSnapshotIds(new Set());
 
       // PersonSnapshotsを再検索
+      setIsJunk(null);
       await searchPersonSnapshots();
+
+      // personSnapshotAnswersも同じ条件で再検索
+      setPersonIdsForAnswer(null);
+      setIsJunkForAnswer(null);
+      await searchPersonSnapshotAnswers();
 
       alert("同じIDを割り当てました");
     } catch (error) {

@@ -6,7 +6,7 @@ export const usePersonSnapshotAnswerSearch = (token: string | null) => {
   const [personSnapshotIds, setPersonSnapshotIds] = useState<string[] | null>(null);
   const [personIds, setPersonIds] = useState<string[] | null>(null);
   const [isJunk, setIsJunk] = useState<boolean | null>(null);
-  const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("desc");
+  const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("asc");
 
   const [personSnapshotAnswers, setPersonSnapshotAnswers] = useState<PersonSnapshotAnswer[]>([]);
   const searchPersonSnapshotAnswers = useCallback(async () => {

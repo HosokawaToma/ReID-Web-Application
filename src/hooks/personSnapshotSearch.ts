@@ -11,7 +11,7 @@ export const usePersonSnapshotSearch = (token: string | null) => {
   const [isJunk, setIsJunk] = useState<boolean | null>(null);
   const [afterTimestamp, setAfterTimestamp] = useState<Date | null>(null);
   const [beforeTimestamp, setBeforeTimestamp] = useState<Date | null>(null);
-  const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("desc");
+  const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("asc");
 
   const [personSnapshots, setPersonSnapshots] = useState<PersonSnapshotMetaData[]>([]);
   const [personSnapshotImages, setPersonSnapshotImages] = useState<Record<string, Blob | null>>({});
