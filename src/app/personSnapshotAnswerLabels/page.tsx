@@ -67,32 +67,6 @@ export default function PersonSnapshotAnswerLabels() {
   // 割り当ては非表示チェックボックスの状態
   const [hideAssigned, setHideAssigned] = useState<boolean>(false);
 
-  // PersonSnapshotAnswersに存在するperson_idのセット
-  const assignedPersonIds = useMemo(() => {
-    const ids = new Set<string>();
-    personSnapshotAnswers.forEach((answer) => {
-      if (answer.personId) {
-        ids.add(answer.personId);
-      }
-    });
-    return ids;
-  }, [personSnapshotAnswers]);
-
-  // 表示するPersonSnapshots（割り当ては非表示がONの場合、Answerに存在するperson_idを持つものを除外）
-  const displayedPersonSnapshots = useMemo(() => {
-    if (!hideAssigned) {
-      return personSnapshots;
-    }
-    return personSnapshots.filter((snapshot) => {
-      // personIdがnullまたはundefinedの場合は表示
-      if (!snapshot.personId) {
-        return true;
-      }
-      // assignedPersonIdsに含まれていない場合は表示
-      return !assignedPersonIds.has(snapshot.personId);
-    });
-  }, [personSnapshots, hideAssigned, assignedPersonIds]);
-
   // personIdの重複を除去したpersonSnapshotAnswers
   const uniquePersonSnapshotAnswers = useMemo(() => {
     const seen = new Set<string>();
@@ -104,6 +78,26 @@ export default function PersonSnapshotAnswerLabels() {
       return true;
     });
   }, [personSnapshotAnswers]);
+
+  // PersonSnapshotAnswersに存在するperson_snapshot_idのセット
+  const assignedPersonSnapshotIds = useMemo(() => {
+    const ids = new Set<string>();
+    personSnapshotAnswers.forEach((answer) => {
+      ids.add(answer.id);
+    });
+    return ids;
+  }, [personSnapshotAnswers]);
+
+  // 表示するPersonSnapshots（割り当ては非表示がONの場合、Answerに存在するpersonSnapshotsを除外）
+  const displayedPersonSnapshots = useMemo(() => {
+    if (!hideAssigned) {
+      return personSnapshots;
+    }
+    return personSnapshots.filter((snapshot) => {
+      // assignedPersonSnapshotIdsに含まれていない場合は表示
+      return !assignedPersonSnapshotIds.has(snapshot.id);
+    });
+  }, [personSnapshots, hideAssigned, assignedPersonSnapshotIds]);
 
   // 各PersonSnapshotAnswerの画像URLを管理
   const [answerImageUrls, setAnswerImageUrls] = useState<Record<string, string>>({});
