@@ -186,7 +186,13 @@ export default function PersonSnapshotAnswerLabels() {
         </h2>
 
         {/* 日付範囲指定フォーム */}
-        <div className={styles.defaultFormContainer} style={{ marginBottom: "var(--spacing-medium)" }}>
+        <div className={styles.defaultFormContainer} style={{
+          marginBottom: "var(--spacing-medium)",
+          height: "auto",
+          minHeight: "auto",
+          gap: "var(--spacing-small)",
+          padding: "var(--spacing-small) var(--spacing-medium)"
+        }}>
           <h3 style={{
             marginBottom: "var(--spacing-medium)",
             fontSize: "var(--font-size-default)",
