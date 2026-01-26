@@ -1,12 +1,13 @@
 "use client";
 
+import PersonSnapshotItem from "@/components/person_snapshot/item";
 import PersonSnapshotList from "@/components/person_snapshot/list";
 import styles from "@/components/styles/index.module.css";
 import { usePersonSnapshotAnswerSearch } from "@/hooks/personSnapshotAnswerSearch";
 import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
 import { ApiV1PersonSnapshotAnswerNewId } from "@/lib/api/v1/personSnapshotAnswerNewId";
 import { toDateInputString, toDateTime, toTimeInputString } from "@/lib/util/date";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 export default function PersonSnapshotAnswerLabels() {
@@ -50,36 +51,35 @@ export default function PersonSnapshotAnswerLabels() {
     });
   };
 
-  // PersonSnapshotsで表示されているperson_idsを取得（nullを除外）
-  // API側でis_junk=Falseと日付範囲でフィルタリングされているので、そのまま使用
-  const displayedPersonIds = useMemo(() => {
-    const personIdSet = new Set<string>();
-    personSnapshots.forEach((snapshot) => {
-      if (snapshot.personId) {
-        personIdSet.add(snapshot.personId);
-      }
+  // 各PersonSnapshotAnswerに対応するPersonSnapshotsを取得
+  const answerPersonSnapshots = useMemo(() => {
+    const result: Record<string, typeof personSnapshots> = {};
+    personSnapshotAnswers.forEach((answer) => {
+      result[answer.id] = personSnapshots.filter(
+        (snapshot) => snapshot.personId === answer.personId
+      );
     });
-    return Array.from(personIdSet);
-  }, [personSnapshots]);
+    return result;
+  }, [personSnapshotAnswers, personSnapshots]);
 
-  // person_idの重複を除去したpersonSnapshotAnswers
-  // さらに、PersonSnapshotsで表示されているperson_idsのみにフィルタリング
-  const uniquePersonSnapshotAnswers = useMemo(() => {
-    const seen = new Set<string>();
-    return personSnapshotAnswers.filter((answer) => {
-      // PersonSnapshotsで表示されているperson_idsのみを含める
-      if (!displayedPersonIds.includes(answer.personId)) {
-        return false;
-      }
-      // person_idの重複を除去
-      if (seen.has(answer.personId)) {
-        return false;
-      }
-      seen.add(answer.personId);
-      return true;
-    });
-  }, [personSnapshotAnswers, displayedPersonIds]);
+  // personSnapshotsが更新されたら、personSnapshotAnswersを取得
+  useEffect(() => {
+    if (!token || personSnapshots.length === 0) return;
 
+    const personIds = Array.from(new Set(
+      personSnapshots
+        .filter((snapshot) => snapshot.personId)
+        .map((snapshot) => snapshot.personId!)
+    ));
+
+    if (personIds.length > 0) {
+      setPersonIdsForAnswer(personIds);
+      setIsJunkForAnswer(null);
+      setSortOrderByTimestampForAnswer("asc");
+      searchPersonSnapshotAnswers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personSnapshots, token]);
 
   // 日付範囲変更のハンドラー
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,25 +113,9 @@ export default function PersonSnapshotAnswerLabels() {
   // 検索実行ハンドラー
   const handleSearch = async () => {
     if (!token) return;
-    // is_junkに関係なく全て取得、timestamp昇順で検索
     setIsJunk(null);
     setSortOrderByTimestamp("asc");
     await searchPersonSnapshots();
-
-    // PersonSnapshotsの検索完了後、PersonSnapshotAnswerSearchも実行
-    // personSnapshotsから直接person_idsを計算
-    const updatedPersonIds = Array.from(new Set(
-      personSnapshots
-        .filter((snapshot) => snapshot.personId)
-        .map((snapshot) => snapshot.personId!)
-    ));
-
-    if (updatedPersonIds.length > 0) {
-      setPersonIdsForAnswer(updatedPersonIds);
-      setIsJunkForAnswer(null);
-      setSortOrderByTimestampForAnswer("asc");
-      await searchPersonSnapshotAnswers();
-    }
   };
 
   // 新しいIDを割り当てるハンドラー
@@ -155,21 +139,6 @@ export default function PersonSnapshotAnswerLabels() {
 
       // PersonSnapshotsを再検索
       await searchPersonSnapshots();
-
-      // PersonSnapshotAnswerSearchを使ってpersonSnapshotAnswerLabelを更新
-      // personSnapshotsから直接person_idsを計算
-      const updatedPersonIds = Array.from(new Set(
-        personSnapshots
-          .filter((snapshot) => snapshot.personId)
-          .map((snapshot) => snapshot.personId!)
-      ));
-
-      if (updatedPersonIds.length > 0) {
-        setPersonIdsForAnswer(updatedPersonIds);
-        setIsJunkForAnswer(null);
-        setSortOrderByTimestampForAnswer("asc");
-        await searchPersonSnapshotAnswers();
-      }
 
       alert("新しいIDを割り当てました");
     } catch (error) {
@@ -201,22 +170,38 @@ export default function PersonSnapshotAnswerLabels() {
           Person Snapshot Answers
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
-          {uniquePersonSnapshotAnswers.map((answer) => (
-            <div
-              key={answer.id}
-              className={answer.isJunk ? styles.errorCard : styles.defaultCard}
-            >
-              <div className={styles.cardMetaDataContainer}>
-                <p className={styles.cardMainMetaDataText}>
-                  Person ID: {answer.personId}
-                </p>
-                <p className={styles.cardMetaDataText}>
-                  {answer.isJunk ? "JUNK" : "Valid"}
-                </p>
+          {personSnapshotAnswers.map((answer) => {
+            const snapshots = answerPersonSnapshots[answer.id] || [];
+            return (
+              <div key={answer.id} style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
+                <div className={answer.isJunk ? styles.errorCard : styles.defaultCard}>
+                  <div className={styles.cardMetaDataContainer}>
+                    <p className={styles.cardMainMetaDataText}>
+                      ID: {answer.id}
+                    </p>
+                    <p className={styles.cardMainMetaDataText}>
+                      Person ID: {answer.personId}
+                    </p>
+                    <p className={styles.cardMetaDataText}>
+                      {answer.isJunk ? "JUNK" : "Valid"}
+                    </p>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)", paddingLeft: "var(--spacing-medium)" }}>
+                  {snapshots.map((snapshot) => (
+                    <PersonSnapshotItem
+                      key={snapshot.id}
+                      personSnapshot={snapshot}
+                      searchPersonSnapshotImage={searchPersonSnapshotImage}
+                      onClickAction={() => {}}
+                      isSelected={false}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-          {uniquePersonSnapshotAnswers.length === 0 && (
+            );
+          })}
+          {personSnapshotAnswers.length === 0 && (
             <p style={{
               color: "var(--default-secondary-text-color)",
               textAlign: "center",
