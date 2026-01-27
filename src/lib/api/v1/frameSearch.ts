@@ -20,27 +20,29 @@ export interface FrameSearchRequest {
   ordering: ("timestamp_asc" | "timestamp_desc")[];
 }
 
+import { fetchWithTokenRefresh } from "../fetchWithTokenRefresh";
+
 export const ApiV1FrameSearch = async (
   token: string | null,
   request: FrameSearchRequest | null = null
 ): Promise<FrameSearchResponse> => {
   console.log(request);
-  return await fetch(
-    new Request(
-      new URL("/api/v1/frame/search", process.env.NEXT_PUBLIC_API_URL as string),
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          filters: request?.filters || null,
-          ordering: request?.ordering || null,
-        }),
-      }
-    )
-  )
+  const requestObj = new Request(
+    new URL("/api/v1/frame/search", process.env.NEXT_PUBLIC_API_URL as string),
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        filters: request?.filters || null,
+        ordering: request?.ordering || null,
+      }),
+    }
+  );
+
+  return await fetchWithTokenRefresh(requestObj, token)
     .then(async (response) => {
       if (response.status !== 200) {
         throw new Error("Unauthorized");

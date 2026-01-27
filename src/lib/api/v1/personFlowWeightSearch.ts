@@ -8,26 +8,28 @@ export interface PersonFlowWeight {
   weight: number;
 }
 
+import { fetchWithTokenRefresh } from "../fetchWithTokenRefresh";
+
 export const ApiV1PersonFlowWeightSearch = async (
   token: string | null,
 ): Promise<PersonFlowWeightSearchResponse> => {
-  return await fetch(
-    new Request(
-      new URL("/api/v1/person/flow/weight/search", process.env.NEXT_PUBLIC_API_URL as string),
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          "after_timestamp": null,
-          "before_timestamp": null,
-          "person_ids": null
-        }),
-      }
-    )
-  )
+  const requestObj = new Request(
+    new URL("/api/v1/person/flow/weight/search", process.env.NEXT_PUBLIC_API_URL as string),
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "after_timestamp": null,
+        "before_timestamp": null,
+        "person_ids": null
+      }),
+    }
+  );
+
+  return await fetchWithTokenRefresh(requestObj, token)
     .then(async (response) => {
       if (response.status !== 200) {
         throw new Error("Unauthorized");
