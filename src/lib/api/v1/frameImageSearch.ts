@@ -1,21 +1,23 @@
+import { fetchWithTokenRefresh } from "../fetchWithTokenRefresh";
+
 export const ApiV1FrameImageSearch = async (
   token: string | null,
   id: string
 ): Promise<Blob> => {
-  return await fetch(
-    new Request(
-      new URL(
-        `/api/v1/frame/image/search/${id}`,
-        process.env.NEXT_PUBLIC_API_URL as string
-      ),
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-  )
+  const requestObj = new Request(
+    new URL(
+      `/api/v1/frame/image/search/${id}`,
+      process.env.NEXT_PUBLIC_API_URL as string
+    ),
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return await fetchWithTokenRefresh(requestObj, token)
     .then(async (response) => {
       if (response.status !== 200) {
         throw new Error("Unauthorized");

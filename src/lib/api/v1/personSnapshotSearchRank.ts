@@ -16,23 +16,25 @@ export interface PersonSnapshot {
   person_id: string | null;
 }
 
+import { fetchWithTokenRefresh } from "../fetchWithTokenRefresh";
+
 export const ApiV1PersonSnapshotSearchRank = async (
   token: string | null,
   request: PersonSnapshotSearchRankRequest
 ): Promise<PersonSnapshotSearchRankResponse> => {
-  return await fetch(
-    new Request(
-      new URL("/api/v1/person/snapshot/search/rank", process.env.NEXT_PUBLIC_API_URL as string),
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-      }
-    )
-  )
+  const requestObj = new Request(
+    new URL("/api/v1/person/snapshot/search/rank", process.env.NEXT_PUBLIC_API_URL as string),
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    }
+  );
+
+  return await fetchWithTokenRefresh(requestObj, token)
     .then(async (response) => {
       if (response.status !== 200) {
         throw new Error("Unauthorized");
