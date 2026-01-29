@@ -6,7 +6,7 @@ export const ApiV1FrameImageSearch = async (
 ): Promise<Blob> => {
   const requestObj = new Request(
     new URL(
-      `/api/v1/frame/image/search/${id}`,
+      `/api/v1/camera_frame/image/search/${id}`,
       process.env.NEXT_PUBLIC_API_URL as string
     ),
     {
