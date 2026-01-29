@@ -20,6 +20,9 @@ export default function FrameSearch() {
     sortOrderByTimestamp,
     frames,
     frameImages,
+    page,
+    totalItems,
+    totalPages,
     setIds,
     setCameraIds,
     setViewIds,
@@ -28,6 +31,9 @@ export default function FrameSearch() {
     setSortOrderByTimestamp,
     searchFrames,
     searchFrameImage,
+    setPage,
+    setTotalItems,
+    setTotalPages,
   } = useFrameSearch({ token });
   const { selectedFrameMetaData, selectedFrameImage, selectFrameById } = useFrameSelect({ frameMetaDatas: frames, frameImages: frameImages });
 
@@ -74,7 +80,7 @@ export default function FrameSearch() {
           boxSizing: "border-box"
         }}>
         <FrameSearchScreen frameMetadata={selectedFrameMetaData} frameImage={selectedFrameImage} />
-        <FrameSearchList frameMetaDatas={frames} searchFrameImage={searchFrameImage} onItemClickAction={selectFrameById} />
+        <FrameSearchList frameMetaDatas={frames} searchFrameImage={searchFrameImage} onItemClickAction={selectFrameById} page={page} totalItems={totalItems} totalPages={totalPages} setPage={setPage} searchFrames={searchFrames} />
       </div>
     </div>
   );

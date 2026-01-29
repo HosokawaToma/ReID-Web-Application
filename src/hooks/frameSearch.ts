@@ -19,29 +19,35 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
   const [frames, setFrames] = useState<FrameMetaData[]>([]);
   const [frameImages, setFrameImages] = useState<Record<string, Blob | null>>({});
   const frameImagesRef = useRef<Record<string, Blob | null>>({});
+  const [page, setPage] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(0);
+
   const searchFrames = useCallback(async () => {
     if (!token) return;
 
     const response = await ApiV1FrameSearch(token, {
-      filters: {
-        ids: ids,
-        camera_ids: cameraIds,
-        view_ids: viewIds,
-        timestamp_after: afterTimestamp ? timestampToString(afterTimestamp) : null,
-        timestamp_before: beforeTimestamp ? timestampToString(beforeTimestamp) : null,
-      },
-      ordering: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
+      ids: ids,
+      camera_ids: cameraIds,
+      view_ids: viewIds,
+      timestamp_after: afterTimestamp ? timestampToString(afterTimestamp) : null,
+      timestamp_before: beforeTimestamp ? timestampToString(beforeTimestamp) : null,
+      sort_by_list: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
+      page: page,
     });
 
-    const baseFrames: FrameMetaData[] = response.frames.map((frame) => ({
-      id: frame.id,
-      cameraId: frame.camera_id,
-      viewId: frame.view_id,
-      timestamp: new Date(frame.timestamp),
+    const baseFrames: FrameMetaData[] = response.camera_frames.map((cameraFrame) => ({
+      id: cameraFrame.id,
+      cameraId: cameraFrame.camera_id,
+      viewId: cameraFrame.view_id,
+      timestamp: new Date(cameraFrame.timestamp),
     }));
 
+    setTotalItems(response.pagination.total_items);
+    setTotalPages(response.pagination.total_pages);
+
     setFrames(baseFrames);
-  }, [ids, afterTimestamp, beforeTimestamp, cameraIds, viewIds, sortOrderByTimestamp, token]);
+  }, [ids, afterTimestamp, beforeTimestamp, cameraIds, viewIds, sortOrderByTimestamp, token, page]);
 
   const searchFrameImage = useCallback(async (frameId: string) => {
     if (!token) return null;
@@ -61,6 +67,9 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
     sortOrderByTimestamp,
     frames,
     frameImages,
+    page,
+    totalItems,
+    totalPages,
     setIds,
     setCameraIds,
     setViewIds,
@@ -69,5 +78,8 @@ export const useFrameSearch = ({ token }: FrameSearchProps) => {
     setSortOrderByTimestamp,
     searchFrames,
     searchFrameImage,
+    setPage,
+    setTotalItems,
+    setTotalPages,
   };
 };

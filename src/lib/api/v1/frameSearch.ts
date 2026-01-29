@@ -1,8 +1,14 @@
 export interface FrameSearchResponse {
-  frames: FrameSearchResponseItem[];
+  camera_frames: CameraFrameSearchResponseItem[];
+  pagination: Pagination;
 }
 
-export interface FrameSearchResponseItem {
+export interface Pagination {
+  total_items: number;
+  total_pages: number;
+}
+
+export interface CameraFrameSearchResponseItem {
   id: string;
   camera_id: number;
   view_id: number;
@@ -10,14 +16,13 @@ export interface FrameSearchResponseItem {
 }
 
 export interface FrameSearchRequest {
-  filters: {
-    ids: string[] | null;
-    camera_ids: number[] | null;
-    view_ids: number[] | null;
-    timestamp_after: string | null;
-    timestamp_before: string | null;
-  };
-  ordering: ("timestamp_asc" | "timestamp_desc")[];
+  ids: string[] | null;
+  camera_ids: number[] | null;
+  view_ids: number[] | null;
+  timestamp_after: string | null;
+  timestamp_before: string | null;
+  sort_by_list: ("timestamp_asc" | "timestamp_desc")[];
+  page: number;
 }
 
 import { fetchWithTokenRefresh } from "../fetchWithTokenRefresh";
@@ -28,7 +33,7 @@ export const ApiV1FrameSearch = async (
 ): Promise<FrameSearchResponse> => {
   console.log(request);
   const requestObj = new Request(
-    new URL("/api/v1/frame/search", process.env.NEXT_PUBLIC_API_URL as string),
+    new URL(`/api/v1/frame/search/${request?.page}`, process.env.NEXT_PUBLIC_API_URL as string),
     {
       method: "POST",
       headers: {
@@ -36,8 +41,12 @@ export const ApiV1FrameSearch = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        filters: request?.filters || null,
-        ordering: request?.ordering || null,
+        ids: request?.ids || null,
+        camera_ids: request?.camera_ids || null,
+        view_ids: request?.view_ids || null,
+        timestamp_after: request?.timestamp_after || null,
+        timestamp_before: request?.timestamp_before || null,
+        sort_by_list: request?.sort_by_list || null,
       }),
     }
   );
