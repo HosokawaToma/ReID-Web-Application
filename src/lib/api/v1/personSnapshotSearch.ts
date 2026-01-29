@@ -1,5 +1,11 @@
 export interface PersonSnapshotSearchResponse {
   person_snapshots: PersonSnapshot[];
+  pagination: Pagination;
+}
+
+export interface Pagination {
+  total_items: number;
+  total_pages: number;
 }
 
 export interface PersonSnapshot {
@@ -20,6 +26,7 @@ export interface PersonSnapshotSearchRequest {
   timestamp_after: string | null;
   timestamp_before: string | null;
   sort_by_list: ("timestamp_asc" | "timestamp_desc")[];
+  page: number;
 }
 
 import { fetchWithTokenRefresh } from "../fetchWithTokenRefresh";
@@ -29,7 +36,7 @@ export const ApiV1PersonSnapshotSearch = async (
   request: PersonSnapshotSearchRequest | null = null,
 ): Promise<PersonSnapshotSearchResponse> => {
   const requestObj = new Request(
-    new URL("/api/v1/person/snapshot/search", process.env.NEXT_PUBLIC_API_URL as string),
+    new URL(`/api/v1/person/snapshot/search/${request?.page ?? 1}`, process.env.NEXT_PUBLIC_API_URL as string),
     {
       method: "POST",
       headers: {

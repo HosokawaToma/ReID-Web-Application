@@ -18,6 +18,9 @@ export default function PersonSnapshotsSearch() {
     afterTimestamp,
     beforeTimestamp,
     sortOrderByTimestamp,
+    page,
+    totalItems,
+    totalPages,
     personSnapshots,
     setPersonIds,
     setCameraIds,
@@ -26,6 +29,7 @@ export default function PersonSnapshotsSearch() {
     setAfterTimestamp,
     setBeforeTimestamp,
     setSortOrderByTimestamp,
+    setPage,
     searchPersonSnapshots,
     searchPersonSnapshotImage,
     addPersonId,
@@ -33,8 +37,12 @@ export default function PersonSnapshotsSearch() {
 
   const {
     personSnapshotId: rankPersonSnapshotId,
+    page: rankPage,
+    totalItems: rankTotalItems,
+    totalPages: rankTotalPages,
     personSnapshots: rankPersonSnapshots,
     setPersonSnapshotId: setRankPersonSnapshotId,
+    setPage: setRankPage,
     searchPersonSnapshotRank,
     searchPersonSnapshotImage: searchRankPersonSnapshotImage,
   } = usePersonSnapshotSearchRank(token);
@@ -81,6 +89,11 @@ export default function PersonSnapshotsSearch() {
         />
         <PersonSnapshotList
           personSnapshots={personSnapshots}
+          page={page}
+          totalItems={totalItems}
+          totalPages={totalPages}
+          setPage={setPage}
+          searchPersonSnapshots={searchPersonSnapshots}
           searchPersonSnapshotImage={searchPersonSnapshotImage}
           onClickAction={addPersonId}
           onShowRanking={handleShowRanking}
@@ -103,6 +116,11 @@ export default function PersonSnapshotsSearch() {
               <div style={{ overflow: "auto", flex: 1 }}>
                 <PersonSnapshotList
                   personSnapshots={rankPersonSnapshots}
+                  page={rankPage}
+                  totalItems={rankTotalItems}
+                  totalPages={rankTotalPages}
+                  setPage={setRankPage}
+                  searchPersonSnapshots={searchPersonSnapshotRank}
                   searchPersonSnapshotImage={searchRankPersonSnapshotImage}
                   onClickAction={() => {}}
                 />
