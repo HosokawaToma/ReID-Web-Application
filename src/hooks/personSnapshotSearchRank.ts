@@ -1,12 +1,13 @@
 import { ApiV1PersonSnapshotImageSearch } from "@/lib/api/v1/personSnapshotImageSearch";
 import { ApiV1PersonSnapshotSearchRank } from "@/lib/api/v1/personSnapshotSearchRank";
 import { PersonSnapshotMetaData } from "@/types/personSnapshots";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const usePersonSnapshotSearchRank = (token: string | null) => {
   const [personSnapshotId, setPersonSnapshotId] = useState<string>("");
-  const [limit, setLimit] = useState<number>(1000);
-
+  const [page, setPage] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const [personSnapshots, setPersonSnapshots] = useState<PersonSnapshotMetaData[]>([]);
   const [personSnapshotImages, setPersonSnapshotImages] = useState<Record<string, Blob | null>>({});
   const personSnapshotImagesRef = useRef<Record<string, Blob | null>>({});
@@ -16,8 +17,11 @@ export const usePersonSnapshotSearchRank = (token: string | null) => {
 
     const response = await ApiV1PersonSnapshotSearchRank(token, {
       person_snapshot_id: personSnapshotId,
-      limit: limit,
+      page: page,
     });
+
+    setTotalItems(response.pagination.total_items);
+    setTotalPages(response.pagination.total_pages);
 
     const baseSnapshots: PersonSnapshotMetaData[] = response.person_snapshots.map(
       (personSnapshot) => ({
@@ -31,7 +35,7 @@ export const usePersonSnapshotSearchRank = (token: string | null) => {
     );
 
     setPersonSnapshots(baseSnapshots);
-  }, [personSnapshotId, limit, token]);
+  }, [personSnapshotId, page, token]);
 
   const searchPersonSnapshotImage = useCallback(
     async (personSnapshotId: string) => {
@@ -47,13 +51,44 @@ export const usePersonSnapshotSearchRank = (token: string | null) => {
     [token]
   );
 
+  useEffect(() => {
+    if (!token || !personSnapshotId) return;
+
+    const performSearch = async () => {
+      const response = await ApiV1PersonSnapshotSearchRank(token, {
+        person_snapshot_id: personSnapshotId,
+        page: page,
+      });
+
+      setTotalItems(response.pagination.total_items);
+      setTotalPages(response.pagination.total_pages);
+
+      const baseSnapshots: PersonSnapshotMetaData[] = response.person_snapshots.map(
+        (personSnapshot) => ({
+          id: personSnapshot.id,
+          cameraId: personSnapshot.camera_id,
+          viewId: personSnapshot.view_id,
+          timestamp: new Date(personSnapshot.timestamp),
+          isJunk: personSnapshot.is_junk,
+          personId: personSnapshot.person_id,
+        })
+      );
+
+      setPersonSnapshots(baseSnapshots);
+    };
+
+    performSearch();
+  }, [page, token, personSnapshotId]);
+
   return {
     personSnapshotId,
-    limit,
+    page,
+    totalItems,
+    totalPages,
     personSnapshots,
     personSnapshotImages,
     setPersonSnapshotId,
-    setLimit,
+    setPage,
     searchPersonSnapshotRank,
     searchPersonSnapshotImage,
   };

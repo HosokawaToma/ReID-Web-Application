@@ -2,7 +2,7 @@ import { ApiV1PersonSnapshotImageSearch } from "@/lib/api/v1/personSnapshotImage
 import { ApiV1PersonSnapshotSearch } from "@/lib/api/v1/personSnapshotSearch";
 import { timestampToString } from "@/lib/util/date";
 import { PersonSnapshotMetaData } from "@/types/personSnapshots";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const usePersonSnapshotSearch = (token: string | null) => {
   const [personIds, setPersonIds] = useState<string[] | null>(null);
@@ -12,8 +12,10 @@ export const usePersonSnapshotSearch = (token: string | null) => {
   const [afterTimestamp, setAfterTimestamp] = useState<Date | null>(null);
   const [beforeTimestamp, setBeforeTimestamp] = useState<Date | null>(null);
   const [sortOrderByTimestamp, setSortOrderByTimestamp] = useState<"asc" | "desc">("desc");
-
+  const [page, setPage] = useState<number>(1);
   const [personSnapshots, setPersonSnapshots] = useState<PersonSnapshotMetaData[]>([]);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const [personSnapshotImages, setPersonSnapshotImages] = useState<Record<string, Blob | null>>({});
   const personSnapshotImagesRef = useRef<Record<string, Blob | null>>({});
 
@@ -33,7 +35,11 @@ export const usePersonSnapshotSearch = (token: string | null) => {
       timestamp_after: afterTimestamp ? timestampToString(afterTimestamp) : null,
       timestamp_before: beforeTimestamp ? timestampToString(beforeTimestamp) : null,
       sort_by_list: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
+      page: page,
     });
+
+    setTotalItems(response.pagination.total_items);
+    setTotalPages(response.pagination.total_pages);
 
     const baseSnapshots: PersonSnapshotMetaData[] = response.person_snapshots.map(
       (personSnapshot) => ({
@@ -56,6 +62,7 @@ export const usePersonSnapshotSearch = (token: string | null) => {
     sortOrderByTimestamp,
     token,
     viewIds,
+    page,
   ]);
 
   const searchPersonSnapshotImage = useCallback(
@@ -72,6 +79,42 @@ export const usePersonSnapshotSearch = (token: string | null) => {
     [token]
   );
 
+  useEffect(() => {
+    if (!token) return;
+
+    const performSearch = async () => {
+      const response = await ApiV1PersonSnapshotSearch(token, {
+        ids: null,
+        camera_ids: cameraIds,
+        view_ids: viewIds,
+        person_ids: personIds,
+        is_junk: isJunk,
+        timestamp_after: afterTimestamp ? timestampToString(afterTimestamp) : null,
+        timestamp_before: beforeTimestamp ? timestampToString(beforeTimestamp) : null,
+        sort_by_list: [sortOrderByTimestamp === "asc" ? "timestamp_asc" : "timestamp_desc"],
+        page: page,
+      });
+
+      setTotalItems(response.pagination.total_items);
+      setTotalPages(response.pagination.total_pages);
+
+      const baseSnapshots: PersonSnapshotMetaData[] = response.person_snapshots.map(
+        (personSnapshot) => ({
+          id: personSnapshot.id,
+          cameraId: personSnapshot.camera_id,
+          viewId: personSnapshot.view_id,
+          timestamp: new Date(personSnapshot.timestamp),
+          isJunk: personSnapshot.is_junk,
+          personId: personSnapshot.person_id,
+        })
+      );
+
+      setPersonSnapshots(baseSnapshots);
+    };
+
+    performSearch();
+  }, [page, token, cameraIds, viewIds, personIds, isJunk, afterTimestamp, beforeTimestamp, sortOrderByTimestamp]);
+
   return {
     personIds,
     cameraIds,
@@ -80,9 +123,13 @@ export const usePersonSnapshotSearch = (token: string | null) => {
     afterTimestamp,
     beforeTimestamp,
     sortOrderByTimestamp,
+    page,
+    totalItems,
+    totalPages,
     personSnapshots,
     personSnapshotImages,
     setPersonIds,
+    setPage,
     setCameraIds,
     setViewIds,
     setIsJunk,

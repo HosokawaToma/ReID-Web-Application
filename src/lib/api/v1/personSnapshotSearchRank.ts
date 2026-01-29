@@ -1,10 +1,16 @@
 export interface PersonSnapshotSearchRankRequest {
   person_snapshot_id: string;
-  limit: number;
+  page: number;
 }
 
 export interface PersonSnapshotSearchRankResponse {
   person_snapshots: PersonSnapshot[];
+  pagination: Pagination;
+}
+
+export interface Pagination {
+  total_items: number;
+  total_pages: number;
 }
 
 export interface PersonSnapshot {
@@ -23,14 +29,13 @@ export const ApiV1PersonSnapshotSearchRank = async (
   request: PersonSnapshotSearchRankRequest
 ): Promise<PersonSnapshotSearchRankResponse> => {
   const requestObj = new Request(
-    new URL("/api/v1/person/snapshot/search/rank", process.env.NEXT_PUBLIC_API_URL as string),
+    new URL(`/api/v1/person/snapshot/search/rank/${request.person_snapshot_id}/${request.page}`, process.env.NEXT_PUBLIC_API_URL as string),
     {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
+      }
     }
   );
 
@@ -40,6 +45,7 @@ export const ApiV1PersonSnapshotSearchRank = async (
         throw new Error("Unauthorized");
       }
       const data = await response.json();
+      console.log(data);
       return data;
     })
     .catch(() => {
