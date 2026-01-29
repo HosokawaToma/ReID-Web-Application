@@ -44,7 +44,8 @@ export default function PersonSnapshotItem({
         </div>
       </div>
       <div className={styles.cardMetaDataContainer}>
-        <p className={styles.cardMainMetaDataText}>Person ID: {personSnapshot.personId}</p>
+        <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
+        <p className={styles.cardMetaDataText}>Person ID: {personSnapshot.personId}</p>
         <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
         <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
         <p className={styles.cardMetaDataText}>
