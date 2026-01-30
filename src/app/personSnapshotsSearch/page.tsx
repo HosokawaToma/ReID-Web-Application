@@ -53,7 +53,6 @@ function SnapshotListContent({
   answerBySnapshotId,
   imageUrls,
   onPageChange,
-  onClickAction,
   onShowRanking,
 }: {
   personSnapshots: PersonSnapshotMetaData[];
@@ -62,7 +61,6 @@ function SnapshotListContent({
   answerBySnapshotId: Record<string, PersonSnapshotAnswer>;
   imageUrls: Record<string, string>;
   onPageChange: (page: number) => void;
-  onClickAction: (personSnapshotId: string) => void;
   onShowRanking?: (personSnapshotId: string) => void;
 }) {
   return (
@@ -75,18 +73,8 @@ function SnapshotListContent({
           return (
             <div
               key={personSnapshot.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onClickAction(personSnapshot.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onClickAction(personSnapshot.id);
-                }
-              }}
               style={{
                 width: "100%",
-                cursor: "pointer",
                 backgroundColor: personColors?.bg,
                 border: personColors ? `2px solid ${personColors.border}` : "2px solid transparent",
                 borderRadius: "var(--border-radius-medium)",
@@ -209,7 +197,6 @@ export default function PersonSnapshotsSearch() {
     setPage,
     searchPersonSnapshots,
     searchPersonSnapshotImage,
-    addPersonId,
   } = usePersonSnapshotSearch(token);
 
   const {
@@ -367,7 +354,6 @@ export default function PersonSnapshotsSearch() {
             answerBySnapshotId={answerBySnapshotId}
             imageUrls={imageUrls}
             onPageChange={handlePageChange}
-            onClickAction={addPersonId}
             onShowRanking={handleShowRanking}
           />
         </div>
@@ -394,7 +380,6 @@ export default function PersonSnapshotsSearch() {
                   answerBySnapshotId={rankAnswerBySnapshotId}
                   imageUrls={rankImageUrls}
                   onPageChange={handleRankPageChange}
-                  onClickAction={() => {}}
                 />
               </div>
             </div>
