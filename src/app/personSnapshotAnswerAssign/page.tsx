@@ -244,10 +244,21 @@ export default function PersonSnapshotAnswerAssignPage() {
         width: "80%",
         height: "100%",
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         overflow: "hidden",
+        gap: "var(--spacing-medium)",
       }}>
-      <div style={{ flexShrink: 0, padding: "var(--spacing-medium)", display: "flex", flexDirection: "column", gap: "var(--spacing-medium)" }}>
+      <div
+        style={{
+          flex: "1 1 50%",
+          minWidth: 0,
+          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+          padding: "var(--spacing-medium)",
+          gap: "var(--spacing-medium)",
+        }}
+      >
         <h2 style={{ margin: 0, fontSize: "var(--font-size-medium)" }}>
           Person Snapshot Answer Assign
         </h2>
@@ -325,14 +336,11 @@ export default function PersonSnapshotAnswerAssignPage() {
             </div>
           </div>
         )}
-      </div>
-
-      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", marginTop: "var(--spacing-medium)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-small)", flexShrink: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)", flexShrink: 0 }}>
           <span style={{ fontSize: "var(--font-size-default)" }}>
             {totalItems > 0 ? `${totalItems} 件` : "検索結果なし"}
           </span>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-medium)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-medium)", flexWrap: "wrap" }}>
             {personSnapshots.length > 0 && (
               <button
                 type="button"
@@ -362,6 +370,16 @@ export default function PersonSnapshotAnswerAssignPage() {
             {deleteError}
           </p>
         )}
+      </div>
+      <div
+        style={{
+          flex: "1 1 50%",
+          minWidth: 0,
+          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <div className={styles.listContainer} style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
           {personSnapshots.map((personSnapshot) => {
             const isSelected = selectedIds.has(personSnapshot.id);
@@ -406,29 +424,33 @@ export default function PersonSnapshotAnswerAssignPage() {
                       )}
                     </div>
                   </div>
-                  <div className={styles.cardMetaDataContainer} style={{ display: "flex", flexDirection: "row", gap: "var(--spacing-medium)", alignItems: "flex-start", width: "100%", flexWrap: "wrap" }}>
-                    <div style={{ flex: "1 1 12rem", minWidth: 0 }}>
-                      <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
-                      <p className={styles.cardMainMetaDataText}>Person ID: {displayPersonId}</p>
-                      <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
-                      <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
-                      <p className={styles.cardMetaDataText}>
-                        Timestamp: {personSnapshot.timestamp.toLocaleString()}
-                      </p>
+                  <div className={styles.cardMetaDataContainer} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "var(--spacing-medium)", width: "100%" }}>
+                    <div style={{ display: "flex", flexDirection: "row", gap: "var(--spacing-medium)", alignItems: "flex-start", width: "100%" }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
+                        <p className={styles.cardMainMetaDataText}>Person ID: {displayPersonId}</p>
+                        <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
+                        <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
+                        <p className={styles.cardMetaDataText}>
+                          Timestamp: {personSnapshot.timestamp.toLocaleString()}
+                        </p>
+                      </div>
                     </div>
                     {answer != null && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteAnswer(personSnapshot.id);
-                        }}
-                        className={styles.defaultButton}
-                        style={{ flexShrink: 0, whiteSpace: "nowrap", minWidth: "6rem", maxWidth: "10rem" }}
-                        disabled={deletingSnapshotId === personSnapshot.id}
-                      >
-                        {deletingSnapshotId === personSnapshot.id ? "削除中..." : "正解ラベル削除"}
-                      </button>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)", flexShrink: 0, alignItems: "flex-start" }}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteAnswer(personSnapshot.id);
+                          }}
+                          className={styles.defaultButton}
+                          style={{ minWidth: "6rem" }}
+                          disabled={deletingSnapshotId === personSnapshot.id}
+                        >
+                          {deletingSnapshotId === personSnapshot.id ? "削除中..." : "正解ラベル削除"}
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
