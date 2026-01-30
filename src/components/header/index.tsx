@@ -18,6 +18,9 @@ export default function Header() {
           <Link href="/frameSearch" className={styles.headerNavigationLink}>
             <div className={styles.headerNavigationItem}>Frame Search</div>
           </Link>
+          <Link href="/personSnapshotAnswerAssign" className={styles.headerNavigationLink}>
+            <div className={styles.headerNavigationItem}>Person Snapshot Answer Assign</div>
+          </Link>
         </div>
       </div>
     </header>
