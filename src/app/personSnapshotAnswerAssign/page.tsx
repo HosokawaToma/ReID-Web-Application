@@ -79,6 +79,58 @@ export default function PersonSnapshotAnswerAssignPage() {
   const assignRequestedRef = useRef(false);
   const [answerBySnapshotId, setAnswerBySnapshotId] = useState<Record<string, PersonSnapshotAnswer>>({});
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [sourceImageUrl, setSourceImageUrl] = useState<string | null>(null);
+  const [sourceAnswer, setSourceAnswer] = useState<PersonSnapshotAnswer | null>(null);
+
+  // 検索対象（ソース）ID の画像と正解ラベル（Answer の person_id）を取得
+  const sourceSnapshotId = personSnapshotId.trim();
+  const sourceFetchCancelledRef = useRef(false);
+  useEffect(() => {
+    if (!token || !sourceSnapshotId) {
+      void Promise.resolve().then(() => {
+        setSourceImageUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return null;
+        });
+        setSourceAnswer(null);
+      });
+      return;
+    }
+    sourceFetchCancelledRef.current = false;
+    searchPersonSnapshotImage(sourceSnapshotId).then((blob) => {
+      if (sourceFetchCancelledRef.current || !blob) return;
+      setSourceImageUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(blob);
+      });
+    });
+    ApiV1PersonSnapshotAnswerSearch(token, {
+      person_snapshot_ids: [sourceSnapshotId],
+      person_ids: null,
+      is_junk: null,
+      sort_by_list: ["created_at_desc"],
+    })
+      .then((res) => {
+        if (sourceFetchCancelledRef.current) return;
+        const ans = res.person_snapshot_answers.find((a) => a.id === sourceSnapshotId) ?? res.person_snapshot_answers[0] ?? null;
+        setSourceAnswer(ans);
+      })
+      .catch(() => {
+        if (!sourceFetchCancelledRef.current) setSourceAnswer(null);
+      });
+    return () => {
+      sourceFetchCancelledRef.current = true;
+    };
+  }, [token, sourceSnapshotId, searchPersonSnapshotImage]);
+
+  useEffect(() => {
+    return () => {
+      setSourceImageUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, []);
 
   // 検索結果の snapshot 一覧に応じて Answer Search で person_id を取得（answer.id = person snapshot id で紐付け）
   useEffect(() => {
@@ -200,6 +252,53 @@ export default function PersonSnapshotAnswerAssignPage() {
             検索
           </button>
         </div>
+        {sourceSnapshotId && (
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--spacing-medium)", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "var(--font-size-default)", fontWeight: "var(--font-weight-default)", whiteSpace: "nowrap" }}>
+              検索対象（正解）:
+            </span>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "var(--spacing-medium)",
+                padding: "var(--spacing-small)",
+                borderRadius: "var(--border-radius-medium)",
+                border: sourceAnswer != null && (sourceAnswer.person_id ?? "") !== ""
+                  ? `2px solid ${getColorsByPersonId(sourceAnswer.person_id ?? "")?.border ?? "transparent"}`
+                  : "2px solid var(--default-border-color)",
+                backgroundColor:
+                  sourceAnswer != null && (sourceAnswer.person_id ?? "") !== ""
+                    ? getColorsByPersonId(sourceAnswer.person_id ?? "")?.bg ?? undefined
+                    : undefined,
+                boxSizing: "border-box",
+              }}
+            >
+              <div style={{ position: "relative", width: "80px", height: "80px", flexShrink: 0, backgroundColor: "var(--default-background-color-secondary)", borderRadius: "var(--border-radius-small)" }}>
+                {sourceImageUrl ? (
+                  <Image
+                    src={sourceImageUrl}
+                    alt="検索対象"
+                    fill
+                    style={{ objectFit: "contain", borderRadius: "var(--border-radius-small)" }}
+                  />
+                ) : (
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--font-size-small)", color: "var(--default-secondary-text-color)" }}>
+                    Loading...
+                  </div>
+                )}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
+                <p style={{ margin: 0, fontSize: "var(--font-size-default)", fontWeight: "var(--font-weight-default)" }}>
+                  Person ID: {sourceAnswer != null ? (sourceAnswer.person_id ?? "") : "—"}
+                </p>
+                <p style={{ margin: 0, fontSize: "var(--font-size-small)", color: "var(--default-secondary-text-color)" }}>
+                  Snapshot ID: {sourceSnapshotId}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", marginTop: "var(--spacing-medium)" }}>
