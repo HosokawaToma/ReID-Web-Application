@@ -31,7 +31,6 @@ export default function PersonSnapshotItem({
     <div className={isJunk ? styles.errorCard : styles.defaultCard}>
       <div className={isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
         <div className={isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
-          {isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
           {imageUrl && (
             <Image
               src={imageUrl}

@@ -411,7 +411,6 @@ export default function PersonSnapshotAnswerAssignPage() {
                 <div className={personSnapshot.isJunk ? styles.errorCard : styles.defaultCard}>
                   <div className={personSnapshot.isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
                     <div className={personSnapshot.isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
-                      {personSnapshot.isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
                       {imageUrls[personSnapshot.id] ? (
                         <Image
                           src={imageUrls[personSnapshot.id]}
