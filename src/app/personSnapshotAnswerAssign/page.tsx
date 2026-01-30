@@ -1,11 +1,27 @@
 "use client";
 
 import { useTokenContext } from "@/app/context/TokenContext";
-import PersonSnapshotItem from "@/components/personSnapshot/item";
 import styles from "@/components/styles/index.module.css";
 import { usePersonSnapshotAnswerAssign } from "@/hooks/personSnapshotAnswerAssign";
 import { usePersonSnapshotSearchNearest } from "@/hooks/personSnapshotSearchNearest";
+import { ApiV1PersonSnapshotAnswerSearch, PersonSnapshotAnswer } from "@/lib/api/v1/personSnapshotAnswerSearch";
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+/** person_id から同じ ID なら同じ色になる背景色と枠色を返す（空の場合は色なし） */
+function getColorsByPersonId(personId: string): { bg: string; border: string } | null {
+  if (personId === "") return null;
+  let hash = 0;
+  for (let i = 0; i < personId.length; i++) {
+    hash = (hash << 5) - hash + personId.charCodeAt(i);
+    hash |= 0;
+  }
+  const hue = Math.abs(hash % 360);
+  return {
+    bg: `hsl(${hue}, 70%, 92%)`,
+    border: `hsl(${hue}, 55%, 45%)`,
+  };
+}
 
 function toggleSelection(selected: Set<string>, id: string): Set<string> {
   const next = new Set(selected);
@@ -40,6 +56,46 @@ export default function PersonSnapshotAnswerAssignPage() {
   const [assigning, setAssigning] = useState(false);
   const [assignError, setAssignError] = useState<string | null>(null);
   const assignRequestedRef = useRef(false);
+  const [answerBySnapshotId, setAnswerBySnapshotId] = useState<Record<string, PersonSnapshotAnswer>>({});
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+
+  // 検索結果の snapshot 一覧に応じて Answer Search で person_id を取得（answer.id = person snapshot id で紐付け）
+  useEffect(() => {
+    if (!token || personSnapshots.length === 0) {
+      void Promise.resolve().then(() => setAnswerBySnapshotId({}));
+      return;
+    }
+    const snapshotIds = personSnapshots.map((s) => s.id);
+    ApiV1PersonSnapshotAnswerSearch(token, {
+      person_snapshot_ids: snapshotIds,
+      person_ids: null,
+      is_junk: null,
+      sort_by_list: ["created_at_desc"],
+    })
+      .then((res) => {
+        const byId: Record<string, PersonSnapshotAnswer> = {};
+        res.person_snapshot_answers.forEach((ans) => {
+          byId[ans.id] = ans;
+        });
+        setAnswerBySnapshotId(byId);
+      })
+      .catch(() => setAnswerBySnapshotId({}));
+  }, [token, personSnapshots]);
+
+  // 各 snapshot の画像を取得
+  useEffect(() => {
+    if (!token || personSnapshots.length === 0) return;
+    let cancelled = false;
+    personSnapshots.forEach((s) => {
+      searchPersonSnapshotImage(s.id).then((blob) => {
+        if (cancelled || !blob) return;
+        setImageUrls((prev) => ({ ...prev, [s.id]: URL.createObjectURL(blob) }));
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [token, personSnapshots, searchPersonSnapshotImage]);
 
   // 参照元・作成先を setter で設定したあと、状態反映後に API を叩く
   useEffect(() => {
@@ -158,6 +214,9 @@ export default function PersonSnapshotAnswerAssignPage() {
         <div className={styles.listContainer} style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
           {personSnapshots.map((personSnapshot) => {
             const isSelected = selectedIds.has(personSnapshot.id);
+            const answer = answerBySnapshotId[personSnapshot.id];
+            const displayPersonId = answer != null ? (answer.person_id ?? "") : "";
+            const personColors = getColorsByPersonId(displayPersonId);
             return (
               <div
                 key={personSnapshot.id}
@@ -173,17 +232,39 @@ export default function PersonSnapshotAnswerAssignPage() {
                 style={{
                   width: "100%",
                   cursor: "pointer",
-                  backgroundColor: isSelected ? "#fef9c3" : undefined,
-                  border: isSelected ? "2px solid #f59e0b" : "2px solid transparent",
+                  backgroundColor: isSelected ? "#fef9c3" : personColors?.bg,
+                  border:
+                    isSelected ? "2px solid #f59e0b" : personColors ? `2px solid ${personColors.border}` : "2px solid transparent",
                   borderRadius: "var(--border-radius-medium)",
                   boxSizing: "border-box",
                 }}
               >
-                <PersonSnapshotItem
-                  personSnapshot={personSnapshot}
-                  searchPersonSnapshotImage={searchPersonSnapshotImage}
-                  onClickAction={() => handleToggleSelect(personSnapshot.id)}
-                />
+                <div className={personSnapshot.isJunk ? styles.errorCard : styles.defaultCard}>
+                  <div className={personSnapshot.isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
+                    <div className={personSnapshot.isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
+                      {personSnapshot.isJunk && <div className={styles.errorImageLabel}>JUNK</div>}
+                      {imageUrls[personSnapshot.id] ? (
+                        <Image
+                          src={imageUrls[personSnapshot.id]}
+                          alt="Person Snapshot"
+                          fill
+                          style={{ objectFit: "contain" }}
+                        />
+                      ) : (
+                        <div className={styles.imageLoading}>Loading...</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className={styles.cardMetaDataContainer}>
+                    <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
+                    <p className={styles.cardMainMetaDataText}>Person ID: {displayPersonId}</p>
+                    <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
+                    <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
+                    <p className={styles.cardMetaDataText}>
+                      Timestamp: {personSnapshot.timestamp.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
               </div>
             );
           })}
