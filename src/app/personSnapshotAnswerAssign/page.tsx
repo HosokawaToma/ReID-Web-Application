@@ -8,19 +8,40 @@ import { ApiV1PersonSnapshotAnswerSearch, PersonSnapshotAnswer } from "@/lib/api
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/** person_id から同じ ID なら同じ色になる背景色と枠色を返す（空の場合は色なし） */
+/** 区別しやすい固定パレット（同じ person_id なら同じ色） */
+const PERSON_ID_COLOR_PALETTE: { bg: string; border: string }[] = [
+  { bg: "#fef2f2", border: "#dc2626" },
+  { bg: "#fff7ed", border: "#ea580c" },
+  { bg: "#fffbeb", border: "#d97706" },
+  { bg: "#fefce8", border: "#ca8a04" },
+  { bg: "#f7fee7", border: "#65a30d" },
+  { bg: "#ecfdf5", border: "#059669" },
+  { bg: "#f0fdfa", border: "#0d9488" },
+  { bg: "#ecfeff", border: "#0891b2" },
+  { bg: "#eff6ff", border: "#2563eb" },
+  { bg: "#eef2ff", border: "#4f46e5" },
+  { bg: "#f5f3ff", border: "#7c3aed" },
+  { bg: "#faf5ff", border: "#9333ea" },
+  { bg: "#fdf4ff", border: "#c026d3" },
+  { bg: "#fdf2f8", border: "#db2777" },
+  { bg: "#fff1f2", border: "#e11d48" },
+  { bg: "#fef3c7", border: "#b45309" },
+  { bg: "#d1fae5", border: "#047857" },
+  { bg: "#cffafe", border: "#0e7490" },
+  { bg: "#dbeafe", border: "#1d4ed8" },
+  { bg: "#e0e7ff", border: "#4338ca" },
+  { bg: "#ede9fe", border: "#6d28d9" },
+  { bg: "#fce7f3", border: "#be185d" },
+];
+
 function getColorsByPersonId(personId: string): { bg: string; border: string } | null {
   if (personId === "") return null;
   let hash = 0;
   for (let i = 0; i < personId.length; i++) {
-    hash = (hash << 5) - hash + personId.charCodeAt(i);
-    hash |= 0;
+    hash = (hash * 31 + personId.charCodeAt(i)) | 0;
   }
-  const hue = Math.abs(hash % 360);
-  return {
-    bg: `hsl(${hue}, 70%, 92%)`,
-    border: `hsl(${hue}, 55%, 45%)`,
-  };
+  const index = Math.abs(hash % PERSON_ID_COLOR_PALETTE.length);
+  return PERSON_ID_COLOR_PALETTE[index];
 }
 
 function toggleSelection(selected: Set<string>, id: string): Set<string> {
