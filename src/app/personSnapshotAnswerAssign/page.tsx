@@ -156,42 +156,37 @@ export default function PersonSnapshotAnswerAssignPage() {
           </p>
         )}
         <div className={styles.listContainer} style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
-          {personSnapshots.map((personSnapshot) => (
-            <div
-              key={personSnapshot.id}
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "var(--spacing-medium)",
-                width: "100%",
-              }}
-            >
-              <label
+          {personSnapshots.map((personSnapshot) => {
+            const isSelected = selectedIds.has(personSnapshot.id);
+            return (
+              <div
+                key={personSnapshot.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleToggleSelect(personSnapshot.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleToggleSelect(personSnapshot.id);
+                  }
+                }}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  minHeight: "80px",
+                  width: "100%",
                   cursor: "pointer",
-                  flexShrink: 0,
+                  backgroundColor: isSelected ? "#fef9c3" : undefined,
+                  border: isSelected ? "2px solid #f59e0b" : "2px solid transparent",
+                  borderRadius: "var(--border-radius-medium)",
+                  boxSizing: "border-box",
                 }}
               >
-                <input
-                  type="checkbox"
-                  checked={selectedIds.has(personSnapshot.id)}
-                  onChange={() => handleToggleSelect(personSnapshot.id)}
-                  style={{ width: "1.2rem", height: "1.2rem", cursor: "pointer" }}
-                />
-              </label>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p>{personSnapshot.id}</p>
                 <PersonSnapshotItem
                   personSnapshot={personSnapshot}
                   searchPersonSnapshotImage={searchPersonSnapshotImage}
                   onClickAction={() => handleToggleSelect(personSnapshot.id)}
                 />
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         {totalPages > 1 && (
           <div
