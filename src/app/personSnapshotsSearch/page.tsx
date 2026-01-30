@@ -131,7 +131,7 @@ function SnapshotListContent({
                       </p>
                     </div>
                     {((showAssignControls && onSetAssignSource && onToggleAssignTarget) || onShowRanking) && (
-                      <div style={{ display: "flex", flexDirection: "row", gap: "var(--spacing-small)", flexShrink: 0, flexWrap: "wrap", alignItems: "center" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)", flexShrink: 0, alignItems: "flex-start" }}>
                         {showAssignControls && onSetAssignSource && onToggleAssignTarget && (
                           <>
                             <button
@@ -141,7 +141,7 @@ function SnapshotListContent({
                                 onSetAssignSource(personSnapshot.id);
                               }}
                               className={isAssignSource ? styles.primaryButton : styles.defaultButton}
-                              style={{ flex: 1, minWidth: "6rem" }}
+                              style={{ minWidth: "6rem" }}
                             >
                               {isAssignSource ? "参照元（解除）" : "参照元にする"}
                             </button>
@@ -152,7 +152,7 @@ function SnapshotListContent({
                                 onToggleAssignTarget(personSnapshot.id);
                               }}
                               className={isAssignTarget ? styles.primaryButton : styles.defaultButton}
-                              style={{ flex: 1, minWidth: "6rem" }}
+                              style={{ minWidth: "6rem" }}
                             >
                               {isAssignTarget ? "割り当て先を解除" : "割り当て先に追加"}
                             </button>
@@ -165,7 +165,7 @@ function SnapshotListContent({
                               onShowRanking(personSnapshot.id);
                             }}
                             className={styles.primaryButton}
-                            style={{ flex: 1, minWidth: "6rem" }}
+                            style={{ minWidth: "6rem" }}
                           >
                             Show Ranking
                           </button>
@@ -178,7 +178,7 @@ function SnapshotListContent({
                               onDeleteAnswer(personSnapshot.id);
                             }}
                             className={styles.defaultButton}
-                            style={{ flex: 1, minWidth: "6rem" }}
+                            style={{ minWidth: "6rem" }}
                             disabled={deletingSnapshotId === personSnapshot.id}
                           >
                             {deletingSnapshotId === personSnapshot.id ? "削除中..." : "正解ラベル削除"}
@@ -563,28 +563,45 @@ export default function PersonSnapshotsSearch() {
 
   return (
     <>
-      <div style={{ width: "80%", height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <PersonSnapshotSearchForm
-          personIds={personIds}
-          cameraIds={cameraIds}
-          viewIds={viewIds}
-          isJunk={isJunk}
-          afterTimestamp={afterTimestamp}
-          beforeTimestamp={beforeTimestamp}
-          sortOrderByTimestamp={sortOrderByTimestamp}
-          setPersonIds={setPersonIds}
-          setCameraIds={setCameraIds}
-          setViewIds={setViewIds}
-          setIsJunk={setIsJunk}
-          setAfterTimestamp={setAfterTimestamp}
-          setBeforeTimestamp={setBeforeTimestamp}
-          setSortOrderByTimestamp={setSortOrderByTimestamp}
-          personIdsOption={[]}
-          cameraIdsOption={[]}
-          viewIdsOption={[]}
-          onSubmitAction={searchPersonSnapshots}
-        />
-        <div style={{ flex: 1, minHeight: 0, overflow: "auto", display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          width: "80%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "row",
+          overflow: "hidden",
+          gap: "var(--spacing-medium)",
+        }}
+      >
+        <div
+          style={{
+            flex: "1 1 50%",
+            minWidth: 0,
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <PersonSnapshotSearchForm
+            personIds={personIds}
+            cameraIds={cameraIds}
+            viewIds={viewIds}
+            isJunk={isJunk}
+            afterTimestamp={afterTimestamp}
+            beforeTimestamp={beforeTimestamp}
+            sortOrderByTimestamp={sortOrderByTimestamp}
+            setPersonIds={setPersonIds}
+            setCameraIds={setCameraIds}
+            setViewIds={setViewIds}
+            setIsJunk={setIsJunk}
+            setAfterTimestamp={setAfterTimestamp}
+            setBeforeTimestamp={setBeforeTimestamp}
+            setSortOrderByTimestamp={setSortOrderByTimestamp}
+            personIdsOption={[]}
+            cameraIdsOption={[]}
+            viewIdsOption={[]}
+            onSubmitAction={searchPersonSnapshots}
+          />
           {assignSourceSnapshotId && (
             <div
               style={{
@@ -702,6 +719,16 @@ export default function PersonSnapshotsSearch() {
               {deleteError}
             </p>
           )}
+        </div>
+        <div
+          style={{
+            flex: "1 1 50%",
+            minWidth: 0,
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <SnapshotListContent
             personSnapshots={personSnapshots}
             page={page}
