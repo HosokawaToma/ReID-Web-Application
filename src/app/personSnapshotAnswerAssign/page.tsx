@@ -33,6 +33,21 @@ const PERSON_ID_COLOR_PALETTE: { bg: string; border: string }[] = [
   { bg: "#e0e7ff", border: "#4338ca" },
   { bg: "#ede9fe", border: "#6d28d9" },
   { bg: "#fce7f3", border: "#be185d" },
+  { bg: "#fef9c3", border: "#eab308" },
+  { bg: "#dcfce7", border: "#16a34a" },
+  { bg: "#ccfbf1", border: "#0f766e" },
+  { bg: "#e0f2fe", border: "#0284c7" },
+  { bg: "#ddd6fe", border: "#5b21b6" },
+  { bg: "#fae8ff", border: "#a21caf" },
+  { bg: "#ffe4e6", border: "#f43f5e" },
+  { bg: "#fed7aa", border: "#c2410c" },
+  { bg: "#fef08a", border: "#a16207" },
+  { bg: "#bbf7d0", border: "#15803d" },
+  { bg: "#99f6e4", border: "#0d5c52" },
+  { bg: "#bae6fd", border: "#0369a1" },
+  { bg: "#c4b5fd", border: "#4c1d95" },
+  { bg: "#f5d0fe", border: "#86198f" },
+  { bg: "#fecdd3", border: "#e11d48" },
 ];
 
 function getColorsByPersonId(personId: string): { bg: string; border: string } | null {
@@ -408,7 +423,10 @@ export default function PersonSnapshotAnswerAssignPage() {
                   boxSizing: "border-box",
                 }}
               >
-                <div className={personSnapshot.isJunk ? styles.errorCard : styles.defaultCard}>
+                <div
+                  className={personSnapshot.isJunk ? styles.errorCard : styles.defaultCard}
+                  style={personColors ? { backgroundColor: personColors.bg } : undefined}
+                >
                   <div className={personSnapshot.isJunk ? styles.errorImageContainer : styles.defaultImageContainer}>
                     <div className={personSnapshot.isJunk ? styles.errorImageBackground : styles.defaultImageBackground}>
                       {imageUrls[personSnapshot.id] ? (
