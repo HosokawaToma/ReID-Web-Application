@@ -4,6 +4,7 @@ import PersonSnapshotSearchForm from "@/components/personSnapshot/search_form";
 import styles from "@/components/styles/index.module.css";
 import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
 import { usePersonSnapshotSearchRank } from "@/hooks/personSnapshotSearchRank";
+import { ApiV1PersonSnapshotAnswerAssign } from "@/lib/api/v1/personSnapshotAnswerAssign";
 import { ApiV1PersonSnapshotAnswerSearch, PersonSnapshotAnswer } from "@/lib/api/v1/personSnapshotAnswerSearch";
 import { PersonSnapshotMetaData } from "@/types/personSnapshots";
 import Image from "next/image";
@@ -54,6 +55,11 @@ function SnapshotListContent({
   imageUrls,
   onPageChange,
   onShowRanking,
+  assignSourceSnapshotId,
+  assignTargetIds,
+  onSetAssignSource,
+  onToggleAssignTarget,
+  showAssignControls,
 }: {
   personSnapshots: PersonSnapshotMetaData[];
   page: number;
@@ -62,6 +68,11 @@ function SnapshotListContent({
   imageUrls: Record<string, string>;
   onPageChange: (page: number) => void;
   onShowRanking?: (personSnapshotId: string) => void;
+  assignSourceSnapshotId?: string | null;
+  assignTargetIds?: Set<string>;
+  onSetAssignSource?: (personSnapshotId: string) => void;
+  onToggleAssignTarget?: (personSnapshotId: string) => void;
+  showAssignControls?: boolean;
 }) {
   return (
     <>
@@ -70,13 +81,19 @@ function SnapshotListContent({
           const answer = answerBySnapshotId[personSnapshot.id];
           const displayPersonId = answer != null ? (answer.person_id ?? "") : "";
           const personColors = getColorsByPersonId(displayPersonId);
+          const isAssignSource = showAssignControls && assignSourceSnapshotId === personSnapshot.id;
+          const isAssignTarget = showAssignControls && (assignTargetIds?.has(personSnapshot.id) ?? false);
           return (
             <div
               key={personSnapshot.id}
               style={{
                 width: "100%",
-                backgroundColor: personColors?.bg,
-                border: personColors ? `2px solid ${personColors.border}` : "2px solid transparent",
+                backgroundColor: isAssignTarget ? "#fef9c3" : personColors?.bg,
+                border: isAssignTarget
+                  ? "2px solid #f59e0b"
+                  : personColors
+                    ? `2px solid ${personColors.border}`
+                    : "2px solid transparent",
                 borderRadius: "var(--border-radius-medium)",
                 boxSizing: "border-box",
               }}
@@ -97,26 +114,60 @@ function SnapshotListContent({
                     )}
                   </div>
                 </div>
-                <div className={styles.cardMetaDataContainer}>
-                  <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
-                  <p className={styles.cardMainMetaDataText}>Person ID: {displayPersonId}</p>
-                  <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
-                  <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
-                  <p className={styles.cardMetaDataText}>
-                    Timestamp: {personSnapshot.timestamp.toLocaleString()}
-                  </p>
-                  {onShowRanking && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onShowRanking(personSnapshot.id);
-                      }}
-                      className={styles.primaryButton}
-                      style={{ marginTop: "var(--spacing-small)" }}
-                    >
-                      Show Ranking
-                    </button>
-                  )}
+                <div className={styles.cardMetaDataContainer} style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", flexDirection: "row", gap: "var(--spacing-medium)", alignItems: "flex-start", width: "100%" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
+                      <p className={styles.cardMainMetaDataText}>Person ID: {displayPersonId}</p>
+                      <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
+                      <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
+                      <p className={styles.cardMetaDataText}>
+                        Timestamp: {personSnapshot.timestamp.toLocaleString()}
+                      </p>
+                    </div>
+                    {((showAssignControls && onSetAssignSource && onToggleAssignTarget) || onShowRanking) && (
+                      <div style={{ display: "flex", flexDirection: "row", gap: "var(--spacing-small)", flexShrink: 0, flexWrap: "wrap", alignItems: "center" }}>
+                        {showAssignControls && onSetAssignSource && onToggleAssignTarget && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSetAssignSource(personSnapshot.id);
+                              }}
+                              className={isAssignSource ? styles.primaryButton : styles.defaultButton}
+                              style={{ flex: 1, minWidth: "6rem" }}
+                            >
+                              {isAssignSource ? "参照元（解除）" : "参照元にする"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onToggleAssignTarget(personSnapshot.id);
+                              }}
+                              className={isAssignTarget ? styles.primaryButton : styles.defaultButton}
+                              style={{ flex: 1, minWidth: "6rem" }}
+                            >
+                              {isAssignTarget ? "割り当て先を解除" : "割り当て先に追加"}
+                            </button>
+                          </>
+                        )}
+                        {onShowRanking && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onShowRanking(personSnapshot.id);
+                            }}
+                            className={styles.primaryButton}
+                            style={{ flex: 1, minWidth: "6rem" }}
+                          >
+                            Show Ranking
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -211,6 +262,12 @@ export default function PersonSnapshotsSearch() {
   } = usePersonSnapshotSearchRank(token);
 
   const [isRankingModalOpen, setIsRankingModalOpen] = useState(false);
+  const [assignSourceSnapshotId, setAssignSourceSnapshotId] = useState<string | null>(null);
+  const [assignTargetIds, setAssignTargetIds] = useState<Set<string>>(new Set());
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
+  const [assignSourceImageUrl, setAssignSourceImageUrl] = useState<string | null>(null);
+  const [assignSourceAnswer, setAssignSourceAnswer] = useState<PersonSnapshotAnswer | null>(null);
   const [answerBySnapshotId, setAnswerBySnapshotId] = useState<Record<string, PersonSnapshotAnswer>>({});
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [rankAnswerBySnapshotId, setRankAnswerBySnapshotId] = useState<Record<string, PersonSnapshotAnswer>>({});
@@ -218,6 +275,7 @@ export default function PersonSnapshotsSearch() {
   const [rankSourceImageUrl, setRankSourceImageUrl] = useState<string | null>(null);
   const [rankSourceAnswer, setRankSourceAnswer] = useState<PersonSnapshotAnswer | null>(null);
   const rankSourceFetchCancelledRef = useRef(false);
+  const assignSourceFetchCancelledRef = useRef(false);
 
   const handleShowRanking = async (personSnapshotId: string) => {
     setRankPersonSnapshotId(personSnapshotId);
@@ -288,9 +346,59 @@ export default function PersonSnapshotsSearch() {
     };
   }, [token, isRankingModalOpen, rankPersonSnapshotId, searchRankPersonSnapshotImage]);
 
+  // 割り当て元: 参照元にした snapshot の画像と正解ラベルを取得（ページを変えても常に表示するため別取得）
+  useEffect(() => {
+    if (!token || !assignSourceSnapshotId) {
+      void Promise.resolve().then(() => {
+        setAssignSourceImageUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return null;
+        });
+        setAssignSourceAnswer(null);
+      });
+      return;
+    }
+    assignSourceFetchCancelledRef.current = false;
+    searchPersonSnapshotImage(assignSourceSnapshotId).then((blob) => {
+      if (assignSourceFetchCancelledRef.current || !blob) return;
+      setAssignSourceImageUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(blob);
+      });
+    });
+    ApiV1PersonSnapshotAnswerSearch(token, {
+      person_snapshot_ids: [assignSourceSnapshotId],
+      person_ids: null,
+      is_junk: null,
+      sort_by_list: ["created_at_desc"],
+    })
+      .then((res) => {
+        if (assignSourceFetchCancelledRef.current) return;
+        const ans =
+          res.person_snapshot_answers.find((a) => a.id === assignSourceSnapshotId) ??
+          res.person_snapshot_answers[0] ??
+          null;
+        setAssignSourceAnswer(ans);
+      })
+      .catch(() => {
+        if (!assignSourceFetchCancelledRef.current) setAssignSourceAnswer(null);
+      });
+    return () => {
+      assignSourceFetchCancelledRef.current = true;
+    };
+  }, [token, assignSourceSnapshotId, searchPersonSnapshotImage]);
+
   useEffect(() => {
     return () => {
       setRankSourceImageUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, []);
+  useEffect(() => {
+    return () => {
+      setAssignSourceImageUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev);
         return null;
       });
@@ -300,6 +408,55 @@ export default function PersonSnapshotsSearch() {
   const handleCloseModal = () => {
     setIsRankingModalOpen(false);
   };
+
+  const handleSetAssignSource = useCallback((personSnapshotId: string) => {
+    setAssignSourceSnapshotId((prev) => (prev === personSnapshotId ? null : personSnapshotId));
+  }, []);
+
+  const handleToggleAssignTarget = useCallback((personSnapshotId: string) => {
+    setAssignTargetIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(personSnapshotId)) next.delete(personSnapshotId);
+      else next.add(personSnapshotId);
+      return next;
+    });
+  }, []);
+
+  const handleSelectAllAssignTargets = useCallback(() => {
+    if (personSnapshots.length === 0) return;
+    const allIds = new Set(personSnapshots.map((s) => s.id));
+    setAssignTargetIds((prev) => (prev.size === personSnapshots.length ? new Set() : allIds));
+  }, [personSnapshots]);
+
+  const handleAssign = useCallback(async () => {
+    if (!token || !assignSourceSnapshotId || assignTargetIds.size === 0) return;
+    setAssignError(null);
+    setAssigning(true);
+    try {
+      await ApiV1PersonSnapshotAnswerAssign(token, {
+        source_person_snapshot_id: assignSourceSnapshotId,
+        target_person_snapshot_ids: Array.from(assignTargetIds),
+      });
+      const snapshotIds = personSnapshots.map((s) => s.id);
+      const res = await ApiV1PersonSnapshotAnswerSearch(token, {
+        person_snapshot_ids: snapshotIds,
+        person_ids: null,
+        is_junk: null,
+        sort_by_list: ["created_at_desc"],
+      });
+      const byId: Record<string, PersonSnapshotAnswer> = {};
+      res.person_snapshot_answers.forEach((ans) => {
+        byId[ans.id] = ans;
+      });
+      setAnswerBySnapshotId((prev) => ({ ...prev, ...byId }));
+      setAssignSourceSnapshotId(null);
+      setAssignTargetIds(new Set());
+    } catch (e) {
+      setAssignError(e instanceof Error ? e.message : "Assign failed");
+    } finally {
+      setAssigning(false);
+    }
+  }, [token, assignSourceSnapshotId, assignTargetIds, personSnapshots]);
 
   // メイン検索結果: Answer Search（answer.id = person snapshot id で紐付け）
   useEffect(() => {
@@ -400,7 +557,119 @@ export default function PersonSnapshotsSearch() {
           viewIdsOption={[]}
           onSubmitAction={searchPersonSnapshots}
         />
-        <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", display: "flex", flexDirection: "column" }}>
+          {assignSourceSnapshotId && (
+            <div
+              style={{
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "var(--spacing-medium)",
+                flexWrap: "wrap",
+                marginBottom: "var(--spacing-medium)",
+              }}
+            >
+              <span style={{ fontSize: "var(--font-size-default)", fontWeight: "var(--font-weight-default)", whiteSpace: "nowrap" }}>
+                割り当て元:
+              </span>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "var(--spacing-medium)",
+                  padding: "var(--spacing-small)",
+                  borderRadius: "var(--border-radius-medium)",
+                  border:
+                    assignSourceAnswer != null && (assignSourceAnswer.person_id ?? "") !== ""
+                      ? `2px solid ${getColorsByPersonId(assignSourceAnswer.person_id ?? "")?.border ?? "transparent"}`
+                      : "2px solid var(--default-border-color)",
+                  backgroundColor:
+                    assignSourceAnswer != null && (assignSourceAnswer.person_id ?? "") !== ""
+                      ? getColorsByPersonId(assignSourceAnswer.person_id ?? "")?.bg ?? undefined
+                      : undefined,
+                  boxSizing: "border-box",
+                }}
+              >
+                <div
+                  style={{
+                    position: "relative",
+                    width: "80px",
+                    height: "80px",
+                    flexShrink: 0,
+                    backgroundColor: "var(--default-background-color-secondary)",
+                    borderRadius: "var(--border-radius-small)",
+                  }}
+                >
+                  {assignSourceImageUrl ? (
+                    <Image
+                      src={assignSourceImageUrl}
+                      alt="割り当て元"
+                      fill
+                      style={{ objectFit: "contain", borderRadius: "var(--border-radius-small)" }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "var(--font-size-small)",
+                        color: "var(--default-secondary-text-color)",
+                      }}
+                    >
+                      Loading...
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
+                  <p style={{ margin: 0, fontSize: "var(--font-size-default)", fontWeight: "var(--font-weight-default)" }}>
+                    Person ID: {assignSourceAnswer != null ? (assignSourceAnswer.person_id ?? "") : "—"}
+                  </p>
+                  <p style={{ margin: 0, fontSize: "var(--font-size-small)", color: "var(--default-secondary-text-color)" }}>
+                    Snapshot ID: {assignSourceSnapshotId}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          <div
+            style={{
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--spacing-medium)",
+              flexWrap: "wrap",
+              marginBottom: "var(--spacing-small)",
+            }}
+          >
+            <span style={{ fontSize: "var(--font-size-default)" }}>
+              正解ラベル割り当て: 参照元を1件選択、割り当て先を1件以上選択して Assign を実行
+            </span>
+            {personSnapshots.length > 0 && (
+              <button
+                type="button"
+                className={styles.defaultButton}
+                onClick={handleSelectAllAssignTargets}
+              >
+                {assignTargetIds.size === personSnapshots.length ? "割り当て先を全解除" : "割り当て先を全選択"}
+              </button>
+            )}
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={handleAssign}
+              disabled={!assignSourceSnapshotId || assignTargetIds.size === 0 || assigning}
+            >
+              {assigning ? "送信中..." : `Assign（${assignTargetIds.size} 件）`}
+            </button>
+          </div>
+          {assignError && (
+            <p style={{ color: "var(--error-color)", fontSize: "var(--font-size-default)", margin: "0 0 var(--spacing-small)", flexShrink: 0 }}>
+              {assignError}
+            </p>
+          )}
           <SnapshotListContent
             personSnapshots={personSnapshots}
             page={page}
@@ -409,6 +678,11 @@ export default function PersonSnapshotsSearch() {
             imageUrls={imageUrls}
             onPageChange={handlePageChange}
             onShowRanking={handleShowRanking}
+            assignSourceSnapshotId={assignSourceSnapshotId}
+            assignTargetIds={assignTargetIds}
+            onSetAssignSource={handleSetAssignSource}
+            onToggleAssignTarget={handleToggleAssignTarget}
+            showAssignControls
           />
         </div>
       </div>
