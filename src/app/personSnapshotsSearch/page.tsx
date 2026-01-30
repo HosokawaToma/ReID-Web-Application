@@ -7,7 +7,7 @@ import { usePersonSnapshotSearchRank } from "@/hooks/personSnapshotSearchRank";
 import { ApiV1PersonSnapshotAnswerSearch, PersonSnapshotAnswer } from "@/lib/api/v1/personSnapshotAnswerSearch";
 import { PersonSnapshotMetaData } from "@/types/personSnapshots";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTokenContext } from "../context/TokenContext";
 
 /** 区別しやすい固定パレット（同じ person_id なら同じ色） */
@@ -215,6 +215,9 @@ export default function PersonSnapshotsSearch() {
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [rankAnswerBySnapshotId, setRankAnswerBySnapshotId] = useState<Record<string, PersonSnapshotAnswer>>({});
   const [rankImageUrls, setRankImageUrls] = useState<Record<string, string>>({});
+  const [rankSourceImageUrl, setRankSourceImageUrl] = useState<string | null>(null);
+  const [rankSourceAnswer, setRankSourceAnswer] = useState<PersonSnapshotAnswer | null>(null);
+  const rankSourceFetchCancelledRef = useRef(false);
 
   const handleShowRanking = async (personSnapshotId: string) => {
     setRankPersonSnapshotId(personSnapshotId);
@@ -242,6 +245,57 @@ export default function PersonSnapshotsSearch() {
       searchPersonSnapshotRank();
     }
   }, [isRankingModalOpen, rankPersonSnapshotId, searchPersonSnapshotRank]);
+
+  // ランキングモーダル: ランキング対象（Show Ranking を押した snapshot）の画像と正解ラベルを取得
+  useEffect(() => {
+    if (!token || !isRankingModalOpen || !rankPersonSnapshotId) {
+      void Promise.resolve().then(() => {
+        setRankSourceImageUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return null;
+        });
+        setRankSourceAnswer(null);
+      });
+      return;
+    }
+    rankSourceFetchCancelledRef.current = false;
+    searchRankPersonSnapshotImage(rankPersonSnapshotId).then((blob) => {
+      if (rankSourceFetchCancelledRef.current || !blob) return;
+      setRankSourceImageUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(blob);
+      });
+    });
+    ApiV1PersonSnapshotAnswerSearch(token, {
+      person_snapshot_ids: [rankPersonSnapshotId],
+      person_ids: null,
+      is_junk: null,
+      sort_by_list: ["created_at_desc"],
+    })
+      .then((res) => {
+        if (rankSourceFetchCancelledRef.current) return;
+        const ans =
+          res.person_snapshot_answers.find((a) => a.id === rankPersonSnapshotId) ??
+          res.person_snapshot_answers[0] ??
+          null;
+        setRankSourceAnswer(ans);
+      })
+      .catch(() => {
+        if (!rankSourceFetchCancelledRef.current) setRankSourceAnswer(null);
+      });
+    return () => {
+      rankSourceFetchCancelledRef.current = true;
+    };
+  }, [token, isRankingModalOpen, rankPersonSnapshotId, searchRankPersonSnapshotImage]);
+
+  useEffect(() => {
+    return () => {
+      setRankSourceImageUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, []);
 
   const handleCloseModal = () => {
     setIsRankingModalOpen(false);
@@ -362,7 +416,7 @@ export default function PersonSnapshotsSearch() {
         <div className="modal" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div style={{ padding: "var(--spacing-large)", width: "80vw", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-medium)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-medium)", flexShrink: 0 }}>
                 <h2 style={{ margin: 0, fontSize: "var(--font-size-medium)" }}>Ranking Results</h2>
                 <button
                   onClick={handleCloseModal}
@@ -372,6 +426,73 @@ export default function PersonSnapshotsSearch() {
                   Close
                 </button>
               </div>
+              {rankPersonSnapshotId && (
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--spacing-medium)", flexWrap: "wrap", marginBottom: "var(--spacing-medium)", flexShrink: 0 }}>
+                  <span style={{ fontSize: "var(--font-size-default)", fontWeight: "var(--font-weight-default)", whiteSpace: "nowrap" }}>
+                    ランキング対象（正解）:
+                  </span>
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "var(--spacing-medium)",
+                      padding: "var(--spacing-small)",
+                      borderRadius: "var(--border-radius-medium)",
+                      border:
+                        rankSourceAnswer != null && (rankSourceAnswer.person_id ?? "") !== ""
+                          ? `2px solid ${getColorsByPersonId(rankSourceAnswer.person_id ?? "")?.border ?? "transparent"}`
+                          : "2px solid var(--default-border-color)",
+                      backgroundColor:
+                        rankSourceAnswer != null && (rankSourceAnswer.person_id ?? "") !== ""
+                          ? getColorsByPersonId(rankSourceAnswer.person_id ?? "")?.bg ?? undefined
+                          : undefined,
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: "relative",
+                        width: "80px",
+                        height: "80px",
+                        flexShrink: 0,
+                        backgroundColor: "var(--default-background-color-secondary)",
+                        borderRadius: "var(--border-radius-small)",
+                      }}
+                    >
+                      {rankSourceImageUrl ? (
+                        <Image
+                          src={rankSourceImageUrl}
+                          alt="ランキング対象"
+                          fill
+                          style={{ objectFit: "contain", borderRadius: "var(--border-radius-small)" }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "var(--font-size-small)",
+                            color: "var(--default-secondary-text-color)",
+                          }}
+                        >
+                          Loading...
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
+                      <p style={{ margin: 0, fontSize: "var(--font-size-default)", fontWeight: "var(--font-weight-default)" }}>
+                        Person ID: {rankSourceAnswer != null ? (rankSourceAnswer.person_id ?? "") : "—"}
+                      </p>
+                      <p style={{ margin: 0, fontSize: "var(--font-size-small)", color: "var(--default-secondary-text-color)" }}>
+                        Snapshot ID: {rankPersonSnapshotId}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div style={{ overflow: "auto", flex: 1 }}>
                 <SnapshotListContent
                   personSnapshots={rankPersonSnapshots}
