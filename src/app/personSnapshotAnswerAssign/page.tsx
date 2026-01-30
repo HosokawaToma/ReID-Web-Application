@@ -4,6 +4,7 @@ import { useTokenContext } from "@/app/context/TokenContext";
 import styles from "@/components/styles/index.module.css";
 import { usePersonSnapshotAnswerAssign } from "@/hooks/personSnapshotAnswerAssign";
 import { usePersonSnapshotSearchNearest } from "@/hooks/personSnapshotSearchNearest";
+import { ApiV1PersonSnapshotAnswerDelete } from "@/lib/api/v1/personSnapshotAnswerDelete";
 import { ApiV1PersonSnapshotAnswerSearch, PersonSnapshotAnswer } from "@/lib/api/v1/personSnapshotAnswerSearch";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -76,11 +77,14 @@ export default function PersonSnapshotAnswerAssignPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [assigning, setAssigning] = useState(false);
   const [assignError, setAssignError] = useState<string | null>(null);
+  const [deletingSnapshotId, setDeletingSnapshotId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const assignRequestedRef = useRef(false);
   const [answerBySnapshotId, setAnswerBySnapshotId] = useState<Record<string, PersonSnapshotAnswer>>({});
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [sourceImageUrl, setSourceImageUrl] = useState<string | null>(null);
   const [sourceAnswer, setSourceAnswer] = useState<PersonSnapshotAnswer | null>(null);
+  const [sourceDataRefreshKey, setSourceDataRefreshKey] = useState(0);
 
   // 検索対象（ソース）ID の画像と正解ラベル（Answer の person_id）を取得
   const sourceSnapshotId = personSnapshotId.trim();
@@ -121,7 +125,7 @@ export default function PersonSnapshotAnswerAssignPage() {
     return () => {
       sourceFetchCancelledRef.current = true;
     };
-  }, [token, sourceSnapshotId, searchPersonSnapshotImage]);
+  }, [token, sourceSnapshotId, searchPersonSnapshotImage, sourceDataRefreshKey]);
 
   useEffect(() => {
     return () => {
@@ -177,10 +181,14 @@ export default function PersonSnapshotAnswerAssignPage() {
 
     assignRequestedRef.current = false;
     assignPersonSnapshotAnswer()
-      .then(() => setSelectedIds(new Set()))
+      .then(() => {
+        setSelectedIds(new Set());
+        searchPersonSnapshotNearest();
+        setSourceDataRefreshKey((k) => k + 1);
+      })
       .catch((e) => setAssignError(e instanceof Error ? e.message : "Assign failed"))
       .finally(() => setAssigning(false));
-  }, [sourcePersonSnapshotId, targetPersonSnapshotIds, assignPersonSnapshotAnswer]);
+  }, [sourcePersonSnapshotId, targetPersonSnapshotIds, assignPersonSnapshotAnswer, searchPersonSnapshotNearest]);
 
   const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => toggleSelection(prev, id));
@@ -209,6 +217,24 @@ export default function PersonSnapshotAnswerAssignPage() {
     setSourcePersonSnapshotId(personSnapshotId.trim());
     setTargetPersonSnapshotIds(Array.from(selectedIds));
   }, [personSnapshotId, selectedIds, setSourcePersonSnapshotId, setTargetPersonSnapshotIds]);
+
+  const handleDeleteAnswer = useCallback(
+    async (personSnapshotIdToDelete: string) => {
+      if (!token) return;
+      setDeleteError(null);
+      setDeletingSnapshotId(personSnapshotIdToDelete);
+      try {
+        await ApiV1PersonSnapshotAnswerDelete(token, { person_snapshot_id: personSnapshotIdToDelete });
+        searchPersonSnapshotNearest();
+        setSourceDataRefreshKey((k) => k + 1);
+      } catch (e) {
+        setDeleteError(e instanceof Error ? e.message : "正解ラベル削除に失敗しました");
+      } finally {
+        setDeletingSnapshotId(null);
+      }
+    },
+    [token, searchPersonSnapshotNearest]
+  );
 
   const canAssign = Boolean(personSnapshotId && selectedIds.size > 0 && !assigning);
 
@@ -331,6 +357,11 @@ export default function PersonSnapshotAnswerAssignPage() {
             {assignError}
           </p>
         )}
+        {deleteError && (
+          <p style={{ color: "var(--error-color)", fontSize: "var(--font-size-default)", margin: "0 0 var(--spacing-small)" }}>
+            {deleteError}
+          </p>
+        )}
         <div className={styles.listContainer} style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
           {personSnapshots.map((personSnapshot) => {
             const isSelected = selectedIds.has(personSnapshot.id);
@@ -375,14 +406,30 @@ export default function PersonSnapshotAnswerAssignPage() {
                       )}
                     </div>
                   </div>
-                  <div className={styles.cardMetaDataContainer}>
-                    <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
-                    <p className={styles.cardMainMetaDataText}>Person ID: {displayPersonId}</p>
-                    <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
-                    <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
-                    <p className={styles.cardMetaDataText}>
-                      Timestamp: {personSnapshot.timestamp.toLocaleString()}
-                    </p>
+                  <div className={styles.cardMetaDataContainer} style={{ display: "flex", flexDirection: "row", gap: "var(--spacing-medium)", alignItems: "flex-start", width: "100%", flexWrap: "wrap" }}>
+                    <div style={{ flex: "1 1 12rem", minWidth: 0 }}>
+                      <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
+                      <p className={styles.cardMainMetaDataText}>Person ID: {displayPersonId}</p>
+                      <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
+                      <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
+                      <p className={styles.cardMetaDataText}>
+                        Timestamp: {personSnapshot.timestamp.toLocaleString()}
+                      </p>
+                    </div>
+                    {answer != null && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteAnswer(personSnapshot.id);
+                        }}
+                        className={styles.defaultButton}
+                        style={{ flexShrink: 0, whiteSpace: "nowrap", minWidth: "6rem", maxWidth: "10rem" }}
+                        disabled={deletingSnapshotId === personSnapshot.id}
+                      >
+                        {deletingSnapshotId === personSnapshot.id ? "削除中..." : "正解ラベル削除"}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
