@@ -5,6 +5,7 @@ import styles from "@/components/styles/index.module.css";
 import { usePersonSnapshotSearch } from "@/hooks/personSnapshotSearch";
 import { usePersonSnapshotSearchRank } from "@/hooks/personSnapshotSearchRank";
 import { ApiV1PersonSnapshotAnswerAssign } from "@/lib/api/v1/personSnapshotAnswerAssign";
+import { ApiV1PersonSnapshotAnswerDelete } from "@/lib/api/v1/personSnapshotAnswerDelete";
 import { ApiV1PersonSnapshotAnswerSearch, PersonSnapshotAnswer } from "@/lib/api/v1/personSnapshotAnswerSearch";
 import { PersonSnapshotMetaData } from "@/types/personSnapshots";
 import Image from "next/image";
@@ -60,6 +61,8 @@ function SnapshotListContent({
   onSetAssignSource,
   onToggleAssignTarget,
   showAssignControls,
+  onDeleteAnswer,
+  deletingSnapshotId,
 }: {
   personSnapshots: PersonSnapshotMetaData[];
   page: number;
@@ -73,6 +76,8 @@ function SnapshotListContent({
   onSetAssignSource?: (personSnapshotId: string) => void;
   onToggleAssignTarget?: (personSnapshotId: string) => void;
   showAssignControls?: boolean;
+  onDeleteAnswer?: (personSnapshotId: string) => void;
+  deletingSnapshotId?: string | null;
 }) {
   return (
     <>
@@ -163,6 +168,20 @@ function SnapshotListContent({
                             style={{ flex: 1, minWidth: "6rem" }}
                           >
                             Show Ranking
+                          </button>
+                        )}
+                        {onDeleteAnswer && answer != null && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteAnswer(personSnapshot.id);
+                            }}
+                            className={styles.defaultButton}
+                            style={{ flex: 1, minWidth: "6rem" }}
+                            disabled={deletingSnapshotId === personSnapshot.id}
+                          >
+                            {deletingSnapshotId === personSnapshot.id ? "削除中..." : "正解ラベル削除"}
                           </button>
                         )}
                       </div>
@@ -266,6 +285,8 @@ export default function PersonSnapshotsSearch() {
   const [assignTargetIds, setAssignTargetIds] = useState<Set<string>>(new Set());
   const [assigning, setAssigning] = useState(false);
   const [assignError, setAssignError] = useState<string | null>(null);
+  const [deletingSnapshotId, setDeletingSnapshotId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [assignSourceImageUrl, setAssignSourceImageUrl] = useState<string | null>(null);
   const [assignSourceAnswer, setAssignSourceAnswer] = useState<PersonSnapshotAnswer | null>(null);
   const [answerBySnapshotId, setAnswerBySnapshotId] = useState<Record<string, PersonSnapshotAnswer>>({});
@@ -437,26 +458,32 @@ export default function PersonSnapshotsSearch() {
         source_person_snapshot_id: assignSourceSnapshotId,
         target_person_snapshot_ids: Array.from(assignTargetIds),
       });
-      const snapshotIds = personSnapshots.map((s) => s.id);
-      const res = await ApiV1PersonSnapshotAnswerSearch(token, {
-        person_snapshot_ids: snapshotIds,
-        person_ids: null,
-        is_junk: null,
-        sort_by_list: ["created_at_desc"],
-      });
-      const byId: Record<string, PersonSnapshotAnswer> = {};
-      res.person_snapshot_answers.forEach((ans) => {
-        byId[ans.id] = ans;
-      });
-      setAnswerBySnapshotId((prev) => ({ ...prev, ...byId }));
       setAssignSourceSnapshotId(null);
       setAssignTargetIds(new Set());
+      searchPersonSnapshots();
     } catch (e) {
       setAssignError(e instanceof Error ? e.message : "Assign failed");
     } finally {
       setAssigning(false);
     }
-  }, [token, assignSourceSnapshotId, assignTargetIds, personSnapshots]);
+  }, [token, assignSourceSnapshotId, assignTargetIds, searchPersonSnapshots]);
+
+  const handleDeleteAnswer = useCallback(
+    async (personSnapshotId: string) => {
+      if (!token) return;
+      setDeleteError(null);
+      setDeletingSnapshotId(personSnapshotId);
+      try {
+        await ApiV1PersonSnapshotAnswerDelete(token, { person_snapshot_id: personSnapshotId });
+        searchPersonSnapshots();
+      } catch (e) {
+        setDeleteError(e instanceof Error ? e.message : "正解ラベル削除に失敗しました");
+      } finally {
+        setDeletingSnapshotId(null);
+      }
+    },
+    [token, searchPersonSnapshots]
+  );
 
   // メイン検索結果: Answer Search（answer.id = person snapshot id で紐付け）
   useEffect(() => {
@@ -670,6 +697,11 @@ export default function PersonSnapshotsSearch() {
               {assignError}
             </p>
           )}
+          {deleteError && (
+            <p style={{ color: "var(--error-color)", fontSize: "var(--font-size-default)", margin: "0 0 var(--spacing-small)", flexShrink: 0 }}>
+              {deleteError}
+            </p>
+          )}
           <SnapshotListContent
             personSnapshots={personSnapshots}
             page={page}
@@ -683,6 +715,8 @@ export default function PersonSnapshotsSearch() {
             onSetAssignSource={handleSetAssignSource}
             onToggleAssignTarget={handleToggleAssignTarget}
             showAssignControls
+            onDeleteAnswer={handleDeleteAnswer}
+            deletingSnapshotId={deletingSnapshotId}
           />
         </div>
       </div>
