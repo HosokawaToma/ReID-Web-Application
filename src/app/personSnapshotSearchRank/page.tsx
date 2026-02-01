@@ -3,6 +3,7 @@
 import { useTokenContext } from "@/app/context/TokenContext";
 import styles from "@/components/styles/index.module.css";
 import { usePersonSnapshotSearchRank } from "@/hooks/personSnapshotSearchRank";
+import { ApiV1PersonSnapshotAnswerSearch, PersonSnapshotAnswer } from "@/lib/api/v1/personSnapshotAnswerSearch";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -73,11 +74,13 @@ export default function PersonSnapshotSearchRankPage() {
 
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [sourceImageUrl, setSourceImageUrl] = useState<string | null>(null);
+  const [sourceAnswer, setSourceAnswer] = useState<PersonSnapshotAnswer | null>(null);
+  const [answerBySnapshotId, setAnswerBySnapshotId] = useState<Record<string, PersonSnapshotAnswer>>({});
   const sourceFetchCancelledRef = useRef(false);
 
   const sourceSnapshotId = personSnapshotId.trim();
 
-  // 検索対象（ソース）ID の画像を取得
+  // 検索対象（ソース）ID の画像と Answer を取得
   useEffect(() => {
     if (!token || !sourceSnapshotId) {
       void Promise.resolve().then(() => {
@@ -85,6 +88,7 @@ export default function PersonSnapshotSearchRankPage() {
           if (prev) URL.revokeObjectURL(prev);
           return null;
         });
+        setSourceAnswer(null);
       });
       return;
     }
@@ -96,6 +100,23 @@ export default function PersonSnapshotSearchRankPage() {
         return URL.createObjectURL(blob);
       });
     });
+    ApiV1PersonSnapshotAnswerSearch(token, {
+      person_snapshot_ids: [sourceSnapshotId],
+      person_ids: null,
+      is_junk: null,
+      sort_by_list: ["created_at_desc"],
+    })
+      .then((res) => {
+        if (sourceFetchCancelledRef.current) return;
+        const ans =
+          res.person_snapshot_answers.find((a) => a.id === sourceSnapshotId) ??
+          res.person_snapshot_answers[0] ??
+          null;
+        setSourceAnswer(ans);
+      })
+      .catch(() => {
+        if (!sourceFetchCancelledRef.current) setSourceAnswer(null);
+      });
     return () => {
       sourceFetchCancelledRef.current = true;
     };
@@ -124,6 +145,29 @@ export default function PersonSnapshotSearchRankPage() {
       cancelled = true;
     };
   }, [token, personSnapshots, searchPersonSnapshotImage]);
+
+  // 検索結果の snapshot 一覧に応じて Answer Search で Answer Person ID を取得
+  useEffect(() => {
+    if (!token || personSnapshots.length === 0) {
+      void Promise.resolve().then(() => setAnswerBySnapshotId({}));
+      return;
+    }
+    const snapshotIds = personSnapshots.map((s) => s.id);
+    ApiV1PersonSnapshotAnswerSearch(token, {
+      person_snapshot_ids: snapshotIds,
+      person_ids: null,
+      is_junk: null,
+      sort_by_list: ["created_at_desc"],
+    })
+      .then((res) => {
+        const byId: Record<string, PersonSnapshotAnswer> = {};
+        res.person_snapshot_answers.forEach((ans) => {
+          byId[ans.id] = ans;
+        });
+        setAnswerBySnapshotId(byId);
+      })
+      .catch(() => setAnswerBySnapshotId({}));
+  }, [token, personSnapshots]);
 
   const handlePageChange = useCallback(
     (newPage: number) => {
@@ -195,7 +239,14 @@ export default function PersonSnapshotSearchRankPage() {
                 gap: "var(--spacing-medium)",
                 padding: "var(--spacing-small)",
                 borderRadius: "var(--border-radius-medium)",
-                border: "2px solid var(--default-border-color)",
+                border:
+                  sourceAnswer != null && (sourceAnswer.person_id ?? "") !== ""
+                    ? `2px solid ${getColorsByPersonId(sourceAnswer.person_id ?? "")?.border ?? "transparent"}`
+                    : "2px solid var(--default-border-color)",
+                backgroundColor:
+                  sourceAnswer != null && (sourceAnswer.person_id ?? "") !== ""
+                    ? getColorsByPersonId(sourceAnswer.person_id ?? "")?.bg ?? undefined
+                    : undefined,
                 boxSizing: "border-box",
               }}
             >
@@ -214,6 +265,9 @@ export default function PersonSnapshotSearchRankPage() {
                 )}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-small)" }}>
+                <p style={{ margin: 0, fontSize: "var(--font-size-default)", fontWeight: "var(--font-weight-default)" }}>
+                  Answer Person ID: {sourceAnswer != null ? (sourceAnswer.person_id ?? "") : "—"}
+                </p>
                 <p style={{ margin: 0, fontSize: "var(--font-size-small)", color: "var(--default-secondary-text-color)" }}>
                   Snapshot ID: {sourceSnapshotId}
                 </p>
@@ -238,8 +292,10 @@ export default function PersonSnapshotSearchRankPage() {
       >
         <div className={styles.listContainer} style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
           {personSnapshots.map((personSnapshot) => {
+            const answer = answerBySnapshotId[personSnapshot.id];
+            const answerPersonId = answer != null ? (answer.person_id ?? "") : "";
             const displayPersonId = personSnapshot.personId ?? "";
-            const personColors = getColorsByPersonId(displayPersonId);
+            const personColors = getColorsByPersonId(answerPersonId);
             return (
               <div key={personSnapshot.id}>
                 <div
@@ -265,6 +321,7 @@ export default function PersonSnapshotSearchRankPage() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p className={styles.cardMainMetaDataText}>Person Snapshot ID: {personSnapshot.id}</p>
                         <p className={styles.cardMainMetaDataText}>Person ID: {displayPersonId}</p>
+                        <p className={styles.cardMainMetaDataText}>Answer Person ID: {answerPersonId || "—"}</p>
                         <p className={styles.cardMetaDataText}>Camera ID: {personSnapshot.cameraId}</p>
                         <p className={styles.cardMetaDataText}>View ID: {personSnapshot.viewId}</p>
                         <p className={styles.cardMetaDataText}>
