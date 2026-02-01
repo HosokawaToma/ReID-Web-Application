@@ -21,6 +21,9 @@ export default function Header() {
           <Link href="/personSnapshotAnswerAssign" className={styles.headerNavigationLink}>
             <div className={styles.headerNavigationItem}>Person Snapshot Answer Assign</div>
           </Link>
+          <Link href="/personSnapshotSearchRank" className={styles.headerNavigationLink}>
+            <div className={styles.headerNavigationItem}>Person Snapshot Search Rank</div>
+          </Link>
         </div>
       </div>
     </header>
